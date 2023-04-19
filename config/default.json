@@ -1,0 +1,7 @@
+{
+    "mongoURI": "mongodb+srv://abdullah:pelikan1@edascluster.lgnqdlh.mongodb.net/edas",
+    "host": "edas-admin.csujcs5csopi.ap-south-1.rds.amazonaws.com",
+    "database": "demoEdasDatabase",
+    "password": "pelikan1",
+    "jwtsecret":"secret"
+}
