@@ -4,8 +4,8 @@
   "description": "backend",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js",
-    "server": "nodemon server.js"
+    "start": "node app.js",
+    "server": "nodemon app.js"
   },
   "author": "Muhammad Abdullah Habib",
   "license": "ISC",

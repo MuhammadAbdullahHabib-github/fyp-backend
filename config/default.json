@@ -3,5 +3,6 @@
     "host": "edas-admin.csujcs5csopi.ap-south-1.rds.amazonaws.com",
     "database": "demoEdasDatabase",
     "password": "pelikan1",
-    "jwtsecret":"secret"
+    "jwtsecret":"secret",
+    "PORT":8000
 }
