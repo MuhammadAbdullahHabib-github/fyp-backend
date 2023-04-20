@@ -19,6 +19,7 @@ connectDB();
 app.use('/api/admin',require('./routes/admin.js'))
 app.use('/api/auth', require('./routes/auth.js'));
 app.use('/api/dynamicforms', require('./routes/dynamicForms.js'));
+app.use('/api/faculty', require('./routes/faculty.js'));
 app.use('/api/forms', require('./routes/forms.js'));
 app.use('/api/student', require('./routes/student.js'));
 

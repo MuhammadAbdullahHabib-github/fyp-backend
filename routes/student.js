@@ -68,7 +68,7 @@ router.post(
       const payload = {
         student: {
           id: student.id,
-        },
+        }
       };
       jwt.sign( payload,config.get("jwtsecret"), {
           expiresIn: 360000,

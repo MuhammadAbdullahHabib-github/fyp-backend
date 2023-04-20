@@ -21,15 +21,11 @@ const FacultySchema = mongoose.Schema({
     type: String,
     required: true,
   },
-  regnum: {
+  faculty: {
     type: String,
     required: true,
   },
-  roles: {
-    type: [String],
-    required: true,
-  },
-  department: {
+  facultyRole: {
     type: String,
     required: true,
   },
@@ -39,7 +35,7 @@ const FacultySchema = mongoose.Schema({
   },
   externalRoles: [
     {
-      department: {
+      faculty: {
         type: String,
         required: true,
       },
