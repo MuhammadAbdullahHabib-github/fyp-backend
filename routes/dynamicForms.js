@@ -85,6 +85,22 @@ router.put("/:id", async (req, res) => {
   }
 });
 
+// @route   DELETE api/dynamicforms/:id
+// @desc    Delete a form
+// @access  Private
+
+router.delete("/:id", auth, async (req, res) => {
+    try {
+        const form = await DynamicForm.findById(req.params.id);
+        if(!form) return res.status(404).json({msg: 'Form not found'});
+        await DynamicForm.findByIdAndRemove(req.params.id);
+        res.json({msg: 'Form removed'});
+    }catch(error){
+        if(error) console.error(error.message);
+        res.status(500).send('Server Error');
+    }
+});
+
 module.exports = router;
 
 
