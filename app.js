@@ -24,5 +24,5 @@ app.use('/api/student', require('./routes/student.js'));
 
 app.get('/', (req, res) => { res.json({message:'Hello World!'})})
 
-const PORT = config.get('PORT') || 5000;
+const PORT = 5000;
 app.listen(PORT, () => console.log(`Server is running on port ${PORT}`));
