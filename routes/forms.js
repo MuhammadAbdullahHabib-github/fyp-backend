@@ -7,10 +7,10 @@ const Student = require('../models/Student');
 const Form = require('../models/Form');
 
 // @route   GET api/forms
-// @desc    Get all the student's forms
+// @desc    Get all the specific student's forms
 // @access  Private
 
-router.get('/',auth , async (req, res) => {
+router.get('/', auth , async (req, res) => {
   try {
     const forms = await Form.find({student: req.student.id}).sort({date: -1});
     res.json(forms)
@@ -51,27 +51,6 @@ router.post('/', [auth, [
 });
 
 
-
-// @route   POST api/forms/:table
-// @desc    Add data into form table as well a the selected table with different parameters.
-// @access  Private
-
-router.post('/:table', function(req, res) {
-    const tableName = req.params.table;
-    const formData = req.body;
-  
-    // construct SQL query to insert formData into tableName
-    const columns = Object.keys(formData);
-    const values = columns.map(key => formData[key]);
-    const placeholders = new Array(values.length).fill('?').join(', ');
-    const query = `INSERT INTO ${tableName} (${columns.join(', ')}) VALUES (${placeholders})`;
-  
-    // execute the query with the form data values
-    pool.query(query, values, function(err, result) {
-      if (err) throw err;
-      res.send('Form data inserted successfully');
-    });
-  });
   
 
   module.exports = router;
