@@ -12,11 +12,15 @@ module.exports = function(req, res, next){
     // if token exists
     try {
         const decoded = jwt.verify(token, config.get('jwtsecret'));
+        console.log(decoded)
         if(decoded.student){
             req.student = decoded.student;
         }else if(decoded.admin){
             req.admin = decoded.admin;
+        }else if(decoded.faculty){
+            req.faculty = decoded.faculty;
         }
+        console.log(req.faculty.id)
         next();
     } catch (error) {   
         res.status(401).json({msg: 'Token is not valid'});

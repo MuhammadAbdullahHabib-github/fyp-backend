@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 const Course = mongoose.Schema({
-    faculty: {
+    facultyMemberId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'faculty',
         required: true,
@@ -19,3 +19,5 @@ const Course = mongoose.Schema({
         },
       ]
 });
+
+module.exports = mongoose.model('course', Course);

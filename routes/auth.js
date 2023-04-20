@@ -167,14 +167,11 @@ router.post(
 router.get(
   "/faculty",
   [
-    auth,
-    [
       check("email", "Please enter a valid email").isEmail(),
       check(
         "password",
         "Please enter a password with 8 or more characters"
       ).isLength({ min: 8 }),
-    ],
   ],
   async (req, res) => {
     const error = validationResult(req);

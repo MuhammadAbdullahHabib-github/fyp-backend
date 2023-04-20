@@ -35,7 +35,7 @@ const FacultySchema = mongoose.Schema({
   },
   externalRoles: [
     {
-      faculty: {
+      externalfaculty: {
         type: String,
         required: true,
       },
@@ -47,4 +47,4 @@ const FacultySchema = mongoose.Schema({
   ],
 });
 
-module.exports = mongoose.model('Faculty', FacultySchema);
+module.exports = mongoose.model('faculty', FacultySchema);

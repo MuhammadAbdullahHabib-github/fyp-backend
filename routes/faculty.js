@@ -1,10 +1,14 @@
 const express = require('express');
 const router = express.Router();
-const Faculty = require('../models/Faculty');
 const { check, validationResult } = require('express-validator');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const config = require('config');	
+const auth = require('../middleware/auth');
+
+const Faculty = require('../models/Faculty');
+const Course = require('../models/Courses');
+
 
 // @route POST api/faculty
 // @desc Register a faculty
@@ -44,13 +48,15 @@ router.post('/', [
         });
 
         const salt = await bcrypt.genSalt(10);
-        faculty.password = await bcrypt.hash(password, salt);
+        facultyMember.password = await bcrypt.hash(password, salt);
         await facultyMember.save();
 
         const payload = {
-            facultyMember: {
-                id: faculty.id
-            }
+            faculty: {
+                id: faculty.id,
+                firstname: faculty.firstname,
+                lastname: faculty.lastname,
+              },
         };
 
         jwt.sign(payload, config.get('jwtsecret'), {
@@ -65,6 +71,36 @@ router.post('/', [
     }
 
 });
+
+
+// @route POST api/faculty
+// @desc Update Courses a faculty
+// @access Private
+
+router.post('/course', [
+    auth,
+    [
+    check('courses', 'Please enter your courses').not().isEmpty(),
+  ]], async (req, res) => {
+    const {courses} = req.body;
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+    try {
+      let course = new Course({
+        facultyMemberId: req.faculty.id,
+        courses: courses
+      });
+      const courseAdded = await course.save();
+      res.send(courseAdded);
+    } catch(error){
+      console.error(error.message);
+      res.status(500).send('Server Error');
+    }
+  });
+  
+
 
 module.exports = router;
 
