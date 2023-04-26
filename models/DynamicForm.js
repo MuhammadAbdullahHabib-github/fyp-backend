@@ -59,9 +59,6 @@ const DynamicFormSchema = mongoose.Schema({
     type: String,
     required: true,
   },
-  formDescription: {
-    type: String,
-  },
   date: {
     type: Date,
     default: Date.now,
@@ -85,64 +82,3 @@ const DynamicFormSchema = mongoose.Schema({
 });
 
 module.exports = mongoose.model("DynamicForm", DynamicFormSchema);
-
-
-
-
-
-
-
-
-
-
-// const SectionSchema = mongoose.Schema({
-//     sectionName: {
-//         type: String,
-//         required: true,
-//     },
-//     sectionDescription: {
-//         type: String,
-//     },
-//     fields:[FieldSchema],
-// })
-
-// const ApproverSchema = new mongoose.Schema({
-//   order: {
-//     type: Number,
-//     required: true,
-//   },
-//   role: {
-//     type: String,
-//     required: true,
-//   },
-//   approved: {
-//     type: Boolean,
-//     default: false,
-//   },
-// });
-
-
-// const mongoose = require('mongoose');
-// const Schema = mongoose.Schema;
-
-// const FormSchema = new Schema({
-//   name: { type: String, required: true },
-//   fields: [
-//     {
-//       type: { type: String, required: true }, // e.g. 'text', 'select', 'checkbox'
-//       label: { type: String, required: true },
-//       name: { type: String, required: true },
-//       options: [{ label: String, value: String }], // for select boxes only
-//       required: { type: Boolean, default: false },
-//       defaultValue: { type: String },
-//       placeholder: { type: String },
-//       maxLength: { type: Number },
-//       minLength: { type: Number },
-//       pattern: { type: String },
-//       disabled: { type: Boolean, default: false },
-//     },
-//   ],
-// });
-
-// module.exports = mongoose.model('Form', FormSchema);
-
