@@ -31,8 +31,7 @@ const FieldSchema = mongoose.Schema({
   },
   type: {
     type: String,
-  },
-
+  }, 
   placeholder: {
     type: String,
   },

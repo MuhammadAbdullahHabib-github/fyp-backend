@@ -1,10 +1,25 @@
 const express = require('express');
 const router = express.Router();
 const { check, validationResult } = require('express-validator');
+const multer = require('multer');
+const path = require('path');
 const auth = require('../middleware/auth');
+// const upload = multer({ dest: 'uploads/' });
 
 const Student = require('../models/Student');
 const Form = require('../models/Form');
+
+
+const storage = multer.diskStorage({
+  destination: function(req,file,callback){
+    return callback(null, './uploads');
+  },
+  filename: function(req, file, callback){
+     callback(null, file.fieldname + '-' + Date.now() + path.extname(file.originalname));
+  }
+});
+
+const upload = multer({storage: storage});
 
 // @route   GET api/forms
 // @desc    Get all the specific student's forms
@@ -26,7 +41,8 @@ router.get('/', auth , async (req, res) => {
 // @desc    Add new form
 // @access  Private
 
-router.post('/', [auth, [
+// 'formDocument' is the name of the file input field in the form
+router.post('/', [auth, upload.single('formDocument'),[
   check('formName', 'Form Name is required').not().isEmpty(),
   check('formDescription', 'Form Description is required').not().isEmpty(),
 ]], async (req, res) => {
@@ -51,6 +67,4 @@ router.post('/', [auth, [
 });
 
 
-  
-
-  module.exports = router;
+module.exports = router;

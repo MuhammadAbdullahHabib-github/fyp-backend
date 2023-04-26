@@ -9,7 +9,7 @@ const auth = require("../middleware/auth.js");
 // @desc    Get all the student's forms
 // @access  Private
 
-router.get("/", auth, async (req, res) => {
+router.get("/", auth , async (req, res) => {
   try {
     const forms = await DynamicForm.find({}).sort({ date: -1 });
     res.json(forms);

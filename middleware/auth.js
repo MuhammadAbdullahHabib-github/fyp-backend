@@ -20,7 +20,6 @@ module.exports = function(req, res, next){
         }else if(decoded.faculty){
             req.faculty = decoded.faculty;
         }
-        console.log(req.faculty.id)
         next();
     } catch (error) {   
         res.status(401).json({msg: 'Token is not valid'});
