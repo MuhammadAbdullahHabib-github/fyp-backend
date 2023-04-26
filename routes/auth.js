@@ -21,7 +21,7 @@ router.get("/student", auth, async (req, res) => {
     res.json(student);
   } catch (error) {
     if (error) throw error;
-    return res.status(500).send("Server Error");
+    return res.status(500).send(`Server Error: ${error.message}`);
   }
 });
 
@@ -79,7 +79,7 @@ router.post(
       );
     } catch (error) {
       console.error(error.message);
-      res.status(500).send("Server Error");
+      res.status(500).send(`Server Error: ${error.message}`);
     }
   }
 );
@@ -154,7 +154,7 @@ router.post(
       );
     } catch (err) {
       console.error(err.message);
-      res.status(500).send("Server Error");
+      res.status(500).send(`Server Error: ${error.message}`);
     }
   }
 );
@@ -213,7 +213,7 @@ router.get(
       );
     } catch (error) {
       console.error(error.message);
-      res.status(500).send("Server Error");
+      res.status(500).send(`Server Error: ${error.message}`);
     }
   }
 );

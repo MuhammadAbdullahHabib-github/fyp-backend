@@ -62,7 +62,7 @@ router.post('/', [auth, upload.single('formDocument'),[
     res.json(submittedForm);
   } catch (error) {
     console.error(error.message);
-    res.status(500).send('Server Error');
+    res.status(500).send(`Server Error: ${error.message}`);
   }
 });
 

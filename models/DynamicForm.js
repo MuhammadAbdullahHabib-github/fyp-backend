@@ -21,7 +21,6 @@ const FieldSchema = mongoose.Schema({
   },
   label: {
     type: String,
-    required: true,
   },
   for: {
     type: String,
@@ -72,7 +71,7 @@ const DynamicFormSchema = mongoose.Schema({
     {
       type: String,
       default:
-        "If anyone provides false/incorrect information, disciplinary action will be taken against the asid person.",
+        "If anyone provides false/incorrect information, disciplinary action will be taken against the said person.",
     },
   ],
   approvers: {

@@ -15,7 +15,7 @@ router.get("/", auth , async (req, res) => {
     res.json(forms);
   } catch (error) {
     if (error) console.log(error.message);
-    res.status(500).send("Server Error");
+    res.status(500).send(`Server Error: ${error.message}`);
   }
 });
 
@@ -23,16 +23,11 @@ router.get("/", auth , async (req, res) => {
 // @desc    Add new form
 // @access  Private
 
-router.post(
-  "/",
-  [
-    auth,
-    [
+router.post("/", [auth, [
       check("formName", "Form Name is required").not().isEmpty(),
       check("formDescription", "Form Description is required").not().isEmpty(),
       check("fields", "Fields are required").not().isEmpty(),
-    ],
-  ],
+    ],],
   async (req, res) => {
     try {
       const error = validationResult(req);
@@ -50,7 +45,7 @@ router.post(
       res.json(dynamicform);
     } catch (error) {
       if (error) console.error(error.message);
-      res.status(500).send("Server Error");
+      res.status(500).send(`Server Error: ${error.message}`);
     }
   }
 );
@@ -81,7 +76,7 @@ router.put("/:id", async (req, res) => {
     res.json(dynamicform);
   } catch (error) {
     if (error) console.error(error.message);
-    res.status(500).send("Server Error");
+    res.status(500).send(`Server Error: ${error.message}`);
   }
 });
 
@@ -97,12 +92,9 @@ router.delete("/:id", auth, async (req, res) => {
         res.json({msg: 'Form removed'});
     }catch(error){
         if(error) console.error(error.message);
-        res.status(500).send('Server Error');
+        res.status(500).send(`Server Error: ${error.message}`);
     }
 });
-
-
-
 
 module.exports = router;
 

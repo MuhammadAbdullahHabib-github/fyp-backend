@@ -10,9 +10,7 @@ const Student = require("../models/Student.js");
 // @desc    Register a student
 // @access  Public
 
-router.post(
-  "/",
-  [
+router.post("/",[
     // Validations
     check("firstname", "Please enter your firstname").not().isEmpty(),
     check("lastname", "Please enter your lastname").not().isEmpty(),
@@ -79,7 +77,7 @@ router.post(
       );
     } catch (err) {
       console.error(err.message);
-      res.status(500).send("Server Error");
+      res.status(500).send(`Server Error: ${err.message}`);
     }
   }
 );

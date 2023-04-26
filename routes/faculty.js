@@ -66,7 +66,7 @@ router.post('/', [
         });
     }catch(error){
         console.error(error.message);
-        res.status(500).send('Server Error');
+        res.status(500).send(`Server Error: ${error.message}`);
     }
 
 });
@@ -95,7 +95,7 @@ router.post('/courses', [
       res.send(courseAdded);
     } catch(error){
       console.error(error.message);
-      res.status(500).send('Server Error');
+      res.status(500).send(`Server Error: ${error.message}`);
     }
   });
 
@@ -126,15 +126,12 @@ router.post('/course', [
         return res.status(404).json({ msg: 'Course not found' });
       }
       res.send(course);
-    } catch (err) {
-      console.error(err.message);
-      res.status(500).send('Server Error');
+    } catch (error) {
+      console.error(error.message);
+      res.status(500).send(`Server Error: ${error.message}`);
     }
   });
   
-  
-  
-
 // @route GET api/faculty/course
 // @desc Get all courses of a faculty member
 // @access Private
@@ -145,7 +142,7 @@ router.get('/course', auth, async (req, res) => {
       res.json(courses);
     } catch (error) {
       console.error(error.message);
-      res.status(500).send('Server Error');
+      res.status(500).send(`Server Error: ${error.message}`);
     }
   });
 

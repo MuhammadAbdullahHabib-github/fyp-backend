@@ -4,6 +4,10 @@ const app = express();
 const connectDB = require('./config/db.js');
 const multer = require('multer');
 const config = require('config');
+const cors = require('cors');
+
+// use cors middleware to allow cross-origin resource sharing
+app.use(cors());
 
 // use body-parser middleware to parse JSON data
 app.use(bodyParser.json());
