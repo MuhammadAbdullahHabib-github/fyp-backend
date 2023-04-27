@@ -8,6 +8,9 @@ const config = require("config");
 const Admin = require("../models/Admin.js");
 const Student = require("../models/Student.js");
 const Faculty = require("../models/Faculty.js");
+
+
+
 const auth = require("../middleware/auth.js");
 
 //-------------------------STUDENT-------------------------//

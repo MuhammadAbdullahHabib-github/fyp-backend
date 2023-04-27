@@ -6,6 +6,10 @@ const jwt = require('jsonwebtoken');
 const config = require('config');
 
 const Admin = require('../models/Admin.js');
+const Student = require('../models/Student.js');
+const Faculty = require('../models/Faculty.js');
+const { route } = require('./dynamicForms.js');
+const auth = require('../middleware/auth.js');
 // @route   POST api/admin
 // @desc    Register a student
 // @access  Public
@@ -62,5 +66,152 @@ router.post('/', [
     }
 
 })
+
+
+// @route   Get api/admin/student/notapproved
+// @desc    check new approval requests from students
+// @access  Private
+
+router.get('/student/notapproved',auth, async (req, res) => {
+    try {
+        const students = await Student.find({approvedByAdmin: false});
+        res.json(students);
+    } catch (error) {
+        console.error(error.message);
+        res.status(500).send(`Server Error: ${error.message}`);
+    }
+})
+
+// @route   Get /api/admin/faculty/notapproved
+// @desc    check new approval requests from students
+// @access  Private
+
+router.get('/faculty/notapproved', auth, async(req, res) => {
+    try {
+        const faculty = await Faculty.find({ accept: false });
+        res.json(faculty);
+    } catch (error) {
+        console.error(error.message);
+        res.status(500).send(`Server Error: ${error.message}`);
+    }
+  });
+
+// @route   Get api/admin/student/notapproved
+// @desc    check approved students
+// @access  Private
+
+router.get('/student/approved',auth, async (req, res) => {
+    try {
+        const students = await Student.find({approvedByAdmin: true});
+        res.json(students);
+    } catch (error) {
+        console.error(error.message);
+        res.status(500).send(`Server Error: ${error.message}`);
+    }
+})
+
+// @route   Get /api/admin/faculty/approved
+// @desc    check approved faculty
+// @access  Private
+
+router.get('/faculty/approved', auth, async(req, res) => {
+    try {
+        const faculty = await Faculty.find({ accept: true });
+        res.json(faculty);
+    } catch (error) {
+        console.error(error.message);
+        res.status(500).send(`Server Error: ${error.message}`);
+    }
+  });
+
+// @route   Put /api/admin/student/:id
+// @desc    update the student by id
+// @access  Private
+
+router.put('student/:id', auth , async (req, res) => {
+    const id = req.params.id;
+
+    try {
+      const result = await Student.updateOne(
+        { _id: ObjectId(id) },
+        { $set: { accept: true } }
+      );
+
+      if (result.matchedCount === 0) {
+        return res.status(404).json({ msg: `Student with id ${id} not found` });
+      }
+
+      res.json({ message: `Student with id ${id} has been approved.` });
+    } catch (error) {
+      console.error(error.message);
+      res.status(500).send(`Server Error: ${error.message}`);
+    }
+  });
+
+// @route   Delete /api/admin/student/:id
+// @desc    Delete the student by id
+// @access  Private
+
+router.put('/api/admin/faculty/:id', async (req, res) => {
+    const id = req.params.id;
+
+    try {
+      const result = await Faculty.updateOne(
+        { _id: ObjectId(id) },
+        { $set: { accept: true } }
+      );
+
+      if (result.matchedCount === 0) {
+        return res.status(404).json({ msg: `Faculty with id ${id} not found` });
+      }
+
+      res.json({ message: `Faculty with id ${id} has been approved.` });
+    } catch (error) {
+      console.error(error.message);
+      res.status(500).send(`Server Error: ${error.message}`);
+    }
+  });
+
+// @route   Delete /api/admin/student/:id
+// @desc    Delete the student by id
+// @access  Private
+
+router.delete('student/:id', auth, async (req, res) => {
+    const id = req.params.id;
+
+    try {
+      const result = await collection.deleteOne({ _id: ObjectId(id) });
+
+      if (result.deletedCount === 0) {
+        return res.status(404).json({ msg: `Student with id ${id} not found` });
+      }
+
+      res.json({ message: `Student with id ${id} has been deleted.` });
+    } catch (error) {
+      console.error(error.message);
+      res.status(500).send(`Server Error: ${error.message}`);
+    }
+  });
+
+// @route   Delete /api/admin/faculty/:id
+// @desc    Delete the faculty by id
+// @access  Private
+
+router.delete('faculty/:id', async (req, res) => {
+    const id = req.params.id;
+
+    try {
+      const result = await Faculty.deleteOne({ _id: ObjectId(id) });
+
+      if (result.deletedCount === 0) {
+        return res.status(404).json({ msg: `Faculty with id ${id} not found` });
+      }
+
+      res.json({ message: `Faculty with id ${id} has been deleted.` });
+    } catch (error) {
+      console.error(error.message);
+      res.status(500).send(`Server Error: ${error.message}`);
+    }
+  });
 
 module.exports = router;
