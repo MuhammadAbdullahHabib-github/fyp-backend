@@ -57,6 +57,12 @@ router.post(
           .status(400)
           .json({ msg: "Invalid registration number or password !student" });
       }
+
+      // Check if the student is approved by admin
+      if (!student.approvedByAdmin) {
+        return res.status(401).json({ msg: "Student has not been approved by the admin" });
+      }
+
       const isMatch = await bcrypt.compare(password, student.password);
       if (!isMatch) {
         return res
@@ -189,6 +195,12 @@ router.get(
           .status(400)
           .json({ msg: "Invalid email or password !faculty" });
       }
+
+      // Check if the faculty is accepted
+       if (!faculty.accept) {
+        return res.status(401).json({ msg: "Faculty has not been accepted" });
+      }
+
       const isMatch = await bcrypt.compare(password, faculty.password);
       if (!isMatch) {
         return res
