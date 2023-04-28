@@ -23,7 +23,7 @@ router.post('/', [
     check('email', 'Please enter a valid email').isEmail(),
     check('password', 'Please enter a password with 8 or more characters').isLength({ min: 8 }),
     check('phoneNumber', 'Please enter a valid phone number').isLength({ min: 11 }),
-    check('faculty', 'Please enter your faculty').not().isEmpty(),
+    check('department', 'Please enter your faculty').not().isEmpty(),
     check('facultyRole', 'Please enter your faculty role').not().isEmpty(),
     check('phoneNumber', 'Please enter a valid phone number').isLength({ min: 11 }),
 ], async (req, res) => {
@@ -31,47 +31,48 @@ router.post('/', [
     if (!error.isEmpty()) {
         return res.status(400).json({ errors: error.array() });
     }
-    const { firstname, lastname, email, password, phoneNumber, faculty, role } = req.body;
+    const { firstname, lastname, email, password, phoneNumber, department, role, subrole } = req.body;
     try {
 
-        let facultyMember = await Faculty.findOne({ email });
-        if (facultyMember) {
-            return res.status(400).json({ msg: 'Faculty already exists' });
-        }
-
-        facultyMember = new Faculty({
-            firstname,
-            lastname,
-            email,
-            password,
-            faculty,
-            role,
-            phoneNumber
-        });
-
-        const salt = await bcrypt.genSalt(10);
-        facultyMember.password = await bcrypt.hash(password, salt);
-        await facultyMember.save();
-
-        const payload = {
-            faculty: {
-                id: faculty.id,
-                firstname: faculty.firstname,
-                lastname: faculty.lastname,
-              },
-        };
-
-        jwt.sign(payload, config.get('jwtsecret'), {
-            expiresIn: 360000
-        }, (err, token) => {
-            if (err) throw err;
-            res.json({ token });
-        });
-    }catch(error){
-        console.error(error.message);
-        res.status(500).send(`Server Error: ${error.message}`);
-    }
-
+      let facultyMember = await Faculty.findOne({ email });
+      if (facultyMember) {
+          return res.status(400).json({ msg: 'Faculty already exists' });
+      }
+  
+      facultyMember = new Faculty({
+          firstname,
+          lastname,
+          email,
+          password,
+          department,
+          role,
+          subrole,
+          phoneNumber
+      });
+  
+      const salt = await bcrypt.genSalt(10);
+      facultyMember.password = await bcrypt.hash(password, salt);
+      await facultyMember.save();
+  
+      const payload = {
+          faculty: {
+              id: facultyMember.id,
+              firstname: facultyMember.firstname,
+              lastname: facultyMember.lastname,
+            },
+      };
+  
+      jwt.sign(payload, config.get('jwtsecret'), {
+          expiresIn: 360000
+      }, (err, token) => {
+          if (err) throw err;
+          res.json({ token });
+      });
+  }catch(error){
+      console.error(error.message);
+      res.status(500).send(`Server Error: ${error.message}`);
+  }
+  
 });
 
 //-----------------FacultyCourses------------------

@@ -17,13 +17,17 @@ const FacultySchema = mongoose.Schema({
     type: String,
     required: true,
   },
-  faculty: {
+  department: {
     type: String,
     required: true,
   },
   role: {
     type: String,
     required: true,
+  },
+  subrole:{
+    type:String,
+    required:true
   },
   accept: {
     type: Boolean,
