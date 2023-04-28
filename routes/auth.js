@@ -36,9 +36,8 @@ router.post(
   "/student",
   [
     // Validations
-    check("regnum", "Please enter a valid registration number").isLength({
-      min: 7,
-    }),
+   check("email", "Please enter a valid email address").isEmail(),
+
     check(
       "password",
       "Please enter a password with 8 or more characters"
@@ -49,9 +48,9 @@ router.post(
     if (!error.isEmpty()) {
       return res.status(400).json({ error: error.array() });
     }
-    const { regnum, password } = req.body;
+    const { email, password } = req.body;
     try {
-      const student = await Student.findOne({ regnum });
+      const student = await Student.findOne({ email });
       if (!student) {
         return res
           .status(400)
@@ -59,7 +58,7 @@ router.post(
       }
 
       // Check if the student is approved by admin
-      if (!student.approvedByAdmin) {
+      if (!student.accept) {
         return res.status(401).json({ msg: "Student has not been approved by the admin" });
       }
 
