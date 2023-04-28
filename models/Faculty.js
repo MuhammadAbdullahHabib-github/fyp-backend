@@ -21,7 +21,7 @@ const FacultySchema = mongoose.Schema({
     type: String,
     required: true,
   },
-  facultyRole: {
+  role: {
     type: String,
     required: true,
   },

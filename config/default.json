@@ -5,5 +5,5 @@
     "database": "demoEdasDatabase",
     "password": "pelikan1",
     "jwtsecret":"secret",
-    "PORT":8002
+    "PORT":8000
 }
