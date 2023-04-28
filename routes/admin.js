@@ -103,7 +103,7 @@ router.get('/student/approved',auth, async (req, res) => {
 // @desc    update the student by id
 // @access  Private
 
-router.put('/student/:id',auth, async (req, res) => {
+router.put('/student/approval/:id',auth, async (req, res) => {
   const { approvedByAdmin } = req.body;
   const studentFields = {};
   studentFields.approvedByAdmin = approvedByAdmin; // Set the "accept" field regardless of its value
@@ -197,7 +197,7 @@ router.get('/faculty/notapproved', auth, async(req, res) => {
 // @desc    check approved faculty
 // @access  Private
 
-router.get('/faculty/approved', auth, async(req, res) => {
+router.get('faculty/approved', auth, async(req, res) => {
     try {
         const faculty = await Faculty.find({ accept: true });
         res.json(faculty);
@@ -213,7 +213,7 @@ router.get('/faculty/approved', auth, async(req, res) => {
 // @access  Private
 //{ "accept":false } send this in body
 
-router.put('/faculty/:id', auth , async (req, res) => {
+router.put('/faculty/approval/:id', async (req, res) => {
   const { accept } = req.body;
   const facultyFields = {};
   facultyFields.accept = accept; // Set the "accept" field regardless of its value
@@ -240,7 +240,7 @@ router.put('/faculty/:id', auth , async (req, res) => {
 // @desc    Delete the faculty by id
 // @access  Private
 
-router.delete('/faculty/:id' ,auth, async (req, res) => {
+router.delete('faculty/:id' ,auth, async (req, res) => {
    try {
       const result = await Faculty.findById(req.params.id);
       if (!result) {

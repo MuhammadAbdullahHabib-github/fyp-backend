@@ -49,26 +49,28 @@ router.post('/', [auth, upload.single('formDocument'),[
   if (!errors.isEmpty()) {
     return res.status(400).json({ errors: errors.array() });
   }
-  // const { formName, responces } = req.body;
+  const { formName, responces, approvalHierarchy } = req.body;
   try {
-
     const student = await Student.findOne({ _id:req.student.id});
     res.json(student);
 
+    const approvers = Form.createApprovers(approvalHierarchy);
 
-    // const form = new Form({
-    //   student: req.student.id,
-    //   formName,
-    //   formDescription,
-    //   responces
-    // });
-    // const submittedForm = await form.save();
-    // res.json(submittedForm);
+    const form = new Form({
+      student: req.student.id,
+      formName,
+      responces,
+      approvers
+    });
+    const submittedForm = await form.save();
+    res.json(submittedForm);
   } catch (error) {
     console.error(error.message);
     res.status(500).send(`Server Error: ${error.message}`);
   }
 });
+
+
 
 
 module.exports = router;

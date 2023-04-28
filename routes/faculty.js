@@ -8,7 +8,10 @@ const auth = require('../middleware/auth');
 
 const Faculty = require('../models/Faculty');
 const Course = require('../models/Courses');
+// const Form = require('../models/Forms');
 
+
+//-----------------FacultySignUp------------------
 // @route POST api/faculty
 // @desc Register a faculty
 // @access Public
@@ -71,7 +74,7 @@ router.post('/', [
 
 });
 
-
+//-----------------FacultyCourses------------------
 // @route POST api/faculty
 // @desc Add multiple courses a faculty
 // @access Private
@@ -175,7 +178,25 @@ router.delete('/course/:code', auth, async (req, res) => {
       res.status(500).send('Server Error');
     }
   });
-  
+
+//-----------------Getting All Student Forms------------------
+// @route GET api/faculty/studentForms
+// @desc Get all student forms
+// @access Private
+
+router.get('/studentForms', auth, async (req, res) => {
+    try {
+        const faculty = await Faculty.findById(req.faculty.id);
+        const roles = faculty.externalRoles.map((externalRole) => externalRole.role);
+        for (const role of roles) {
+          // const forms = await Form.find({ role: role }).populate('student');
+        }
+      
+    } catch (error) {
+        console.error(error.message);
+        res.status(500).send(`Server Error: ${error.message}`);
+    }
+});
 
 
 module.exports = router;
