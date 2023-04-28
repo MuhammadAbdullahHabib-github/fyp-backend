@@ -76,7 +76,7 @@ router.post('/', [
 
 router.get('/student/notapproved',auth, async (req, res) => {
     try {
-        const students = await Student.find({approvedByAdmin: false});
+        const students = await Student.find({accept: false});
         res.json(students);
     } catch (error) {
         console.error(error.message);
@@ -91,7 +91,7 @@ router.get('/student/notapproved',auth, async (req, res) => {
 
 router.get('/student/approved',auth, async (req, res) => {
   try {
-      const students = await Student.find({approvedByAdmin: true});
+      const students = await Student.find({accept: true});
       res.json(students);
   } catch (error) {
       console.error(error.message);
@@ -99,7 +99,7 @@ router.get('/student/approved',auth, async (req, res) => {
   }
 })
 
-// @route   Put /api/admin/student/:id
+// @route   Put /api/admin/student/:id ----- applied at client side
 // @desc    update the student by id
 // @access  Private
 
@@ -125,7 +125,7 @@ router.put('/student/approval/:id',auth, async (req, res) => {
   }
 });
 
-// @route   Delete /api/admin/student/:id
+// @route   Delete /api/admin/student/:id ----- applied at client side
 // @desc    Delete the student by id
 // @access  Private
 
@@ -208,7 +208,7 @@ router.get('/faculty/approve', auth, async(req, res) => {
   });
 
 
-// @route   Delete /api/admin/student/:id
+// @route   Delete /api/admin/student/:id ----- applied at client side
 // @desc    Delete the student by id
 // @access  Private
 //{ "accept":false } send this in body
@@ -236,11 +236,11 @@ router.put('/faculty/approval/:id', async (req, res) => {
 });
 
 
-// @route   Delete /api/admin/faculty/:id
+// @route   Delete /api/admin/faculty/:id ----- applied at client side
 // @desc    Delete the faculty by id
 // @access  Private
 
-router.delete('faculty/:id' ,auth, async (req, res) => {
+router.delete('/faculty/:id' ,auth, async (req, res) => {
    try {
       const result = await Faculty.findById(req.params.id);
       if (!result) {

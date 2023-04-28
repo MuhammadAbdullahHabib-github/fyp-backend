@@ -33,12 +33,14 @@ try {
   if (!error.isEmpty()) {
     return res.status(400).json({ errors: error.array() });
   }
-  const { formName, fields, undertaking, approvalHierarchy } = req.body;
+  const { formName, fields, undertaking, approvalHierarchy , facultyVisibility , studentVisibility } = req.body;
   const newForm = new DynamicForm({
     formName,
     fields,
     undertaking,
     approvalHierarchy,
+    facultyVisibility,
+    studentVisibility
   });
   const dynamicform = await newForm.save();
   res.json(dynamicform);

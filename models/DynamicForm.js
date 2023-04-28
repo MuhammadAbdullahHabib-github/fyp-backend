@@ -1,13 +1,11 @@
 const mongoose = require("mongoose");
 
 const FieldSchema = mongoose.Schema({
-  tag: {
+  id:{
     type: String,
+    required: true,
   },
-  label: {
-    type: String,
-  },
-  for: {
+  heading:{
     type: String,
   },
   name: {
@@ -22,27 +20,32 @@ const FieldSchema = mongoose.Schema({
   required: {
     type: Boolean,
   },
-  value: {
-    type: mongoose.Schema.Types.Mixed,
-  },
   options: {
     type: [mongoose.Schema.Types.Mixed],
   },
+  allowBeforeToday: {
+    type: Boolean,
+  },
+  clockFormat: {
+    type: String,
+  },
   rows: {
     type: Number,
-  },
-  cols: {
-    type: Number,
-  },
-  pattern: {
-    type: String,
-}
+  }
 });
 
 const DynamicFormSchema = mongoose.Schema({
   formName: {
     type: String,
     required: true,
+  },
+  studentVisibility: {
+    type: Boolean,
+    default: false
+  },
+  facultyVisibility: {
+    type: Boolean,
+    default: false
   },
   date: {
     type: Date,
