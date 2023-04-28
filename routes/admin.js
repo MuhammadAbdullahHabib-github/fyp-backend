@@ -8,7 +8,6 @@ const config = require('config');
 const Admin = require('../models/Admin.js');
 const Student = require('../models/Student.js');
 const Faculty = require('../models/Faculty.js');
-const { route } = require('./dynamicForms.js');
 const auth = require('../middleware/auth.js');
 
 
@@ -104,7 +103,7 @@ router.get('/student/approved',auth, async (req, res) => {
 // @desc    update the student by id
 // @access  Private
 
-router.put('/student/:id',  async (req, res) => {
+router.put('/student/:id',auth, async (req, res) => {
   const { approvedByAdmin } = req.body;
   const studentFields = {};
   studentFields.approvedByAdmin = approvedByAdmin; // Set the "accept" field regardless of its value
@@ -149,7 +148,7 @@ router.delete('/student/:id',auth, async (req, res) => {
 // @desc    add external role to faculty
 // @access  Private
 
-router.put('/faculty/:id', async (req, res) => {
+router.put('/faculty/:id', auth, async (req, res) => {
   const { externalrole } = req.body;
 
   try {
@@ -178,19 +177,6 @@ router.put('/faculty/:id', async (req, res) => {
     res.status(500).send('Server Error');
   }
 });
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 // @route   Get /api/admin/faculty/notapproved
 // @desc    check new approval requests from students
