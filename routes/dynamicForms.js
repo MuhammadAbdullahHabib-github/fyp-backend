@@ -36,6 +36,23 @@ router.get("/student", auth, async (req, res) => {
 });
 
 
+// @route   GET api/dynamicforms/student/:id
+// @desc    Get all the dynamicforms with student visibility
+// @access  Private
+
+router.get("/student/:id", auth, async (req, res) => {
+  try {
+    const forms = await DynamicForm.find({
+      studentVisibility: true,
+      _id: req.params.id,
+    }).sort({ date: -1 });
+    res.json(forms);
+  } catch (error) {
+    console.log(error.message);
+    res.status(500).send(`Server Error: ${error.message}`);
+  }
+});
+
 // @route   GET api/dynamicforms/faculty
 // @desc    Get all dynamicforms with faculty visibility
 // @access  Private
