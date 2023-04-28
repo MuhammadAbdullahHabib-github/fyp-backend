@@ -193,11 +193,12 @@ router.get('/faculty/notapproved', auth, async(req, res) => {
   });
 
 
-// @route   Get /api/admin/faculty/approved
+// @route   Get /api/admin/faculty/approve
 // @desc    check approved faculty
-// @access  Private
+// @access  Private 
 
-router.get('faculty/approved', auth, async(req, res) => {
+router.get('/faculty/approve', auth, async(req, res) => {
+  // res.send('approved faculty')
     try {
         const faculty = await Faculty.find({ accept: true });
         res.json(faculty);
