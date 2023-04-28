@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 
-const ApproverSchema = new mongoose.Schema({
+const ApproverlSchema = new mongoose.Schema({
   role: {
     type: String,
     required: true,
@@ -63,22 +63,37 @@ const DynamicFormSchema = mongoose.Schema({
     type: Date,
     default: Date.now,
   },
-  fields: [FieldSchema],
-  undertaking: [
-    {
-      type: String,
-      default:
-        "If anyone provides false/incorrect information, disciplinary action will be taken against the said person.",
-    },
-  ],
-  approvers: {
+  fields:{ 
+    type:[FieldSchema],
+    required: true,
+  },
+  undertaking: {
     type: [
       {
-        type: ApproverSchema,
+        type: String,
       },
     ],
+    default: [
+      "If anyone provides false/incorrect information, disciplinary action will be taken against the said person.",
+    ],
+  },
+  approvers: {
+    type: [ApproverlSchema],
     required: true,
   },
 });
+
+
+DynamicFormSchema.statics.createApprovers = function (approvalHierarchy) {
+  if (!Array.isArray(approvalHierarchy)) {
+    approvalHierarchy = [];
+  }
+  
+  return approvalHierarchy.map((role, index) => ({
+    role: role,
+    order: index + 1,
+    approved: false,
+  }));
+};
 
 module.exports = mongoose.model("DynamicForm", DynamicFormSchema);

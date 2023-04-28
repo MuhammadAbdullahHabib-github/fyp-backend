@@ -17,10 +17,6 @@ const FacultySchema = mongoose.Schema({
     type: String,
     required: true,
   },
-  phoneNumber: {
-    type: String,
-    required: true,
-  },
   faculty: {
     type: String,
     required: true,
@@ -33,6 +29,10 @@ const FacultySchema = mongoose.Schema({
     type: Boolean,
     default: false,
   },
+  phoneNumber: {
+    type: String,
+    required: true,
+  },
   externalRoles: [
     {
       externalfaculty: {
@@ -43,6 +43,9 @@ const FacultySchema = mongoose.Schema({
         type: String,
         required: true,
       },
+      batch:{
+        type:Number
+      }
     },
   ],
 });

@@ -10,6 +10,9 @@ const Student = require('../models/Student.js');
 const Faculty = require('../models/Faculty.js');
 const { route } = require('./dynamicForms.js');
 const auth = require('../middleware/auth.js');
+
+
+//-----------------Admin------------------
 // @route   POST api/admin
 // @desc    Register a student
 // @access  Public
@@ -67,7 +70,7 @@ router.post('/', [
 
 })
 
-
+//-----------------Student------------------
 // @route   Get api/admin/student/notapproved
 // @desc    check new approval requests from students
 // @access  Private
@@ -81,6 +84,113 @@ router.get('/student/notapproved',auth, async (req, res) => {
         res.status(500).send(`Server Error: ${error.message}`);
     }
 })
+
+
+// @route   Get api/admin/student/notapproved
+// @desc    check approved students
+// @access  Private
+
+router.get('/student/approved',auth, async (req, res) => {
+  try {
+      const students = await Student.find({approvedByAdmin: true});
+      res.json(students);
+  } catch (error) {
+      console.error(error.message);
+      res.status(500).send(`Server Error: ${error.message}`);
+  }
+})
+
+// @route   Put /api/admin/student/:id
+// @desc    update the student by id
+// @access  Private
+
+router.put('/student/:id',  async (req, res) => {
+  const { approvedByAdmin } = req.body;
+  const studentFields = {};
+  studentFields.approvedByAdmin = approvedByAdmin; // Set the "accept" field regardless of its value
+
+  try {
+    let student = await Student.findById(req.params.id);
+    if (!student) return res.status(404).json({ msg: "Student not found" });
+
+    const result = await Student.findByIdAndUpdate(
+      req.params.id,
+      { $set: studentFields },
+      { new: true }
+    );
+
+    res.json(result);
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).send(`Server Error: ${error.message}`);
+  }
+});
+
+// @route   Delete /api/admin/student/:id
+// @desc    Delete the student by id
+// @access  Private
+
+router.delete('/student/:id',auth, async (req, res) => {
+  try {
+    const result = await Student.findById(req.params.id);
+    if (!result) {
+      return res.status(404).json({ msg: `Student with id ${id} not found` });
+    }
+    await Student.findByIdAndRemove(req.params.id);
+    res.json({ msg: `Student removed.` });
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).send(`Server Error: ${error.message}`);
+  }
+});
+
+//-----------------Faculty------------------
+// @route   Put /api/admin/faculty/
+// @desc    add external role to faculty
+// @access  Private
+
+router.put('/faculty/:id', async (req, res) => {
+  const { externalrole } = req.body;
+
+  try {
+    const faculty = await Faculty.findById(req.params.id);
+
+    if (!faculty) {
+      return res.status(404).json({ msg: 'Faculty not found' });
+    }
+
+    // Create a new role object based on the request body
+    const newRole = {
+      externalfaculty: externalrole[0].externalfaculty,
+      role: externalrole[0].role,
+      batch: externalrole[0].batch || null, // Use null if batch is not provided
+    };
+
+    // Add the new role object to the externalRoles array
+    faculty.externalRoles.push(newRole);
+
+    // Save the updated faculty document
+    const result = await faculty.save();
+
+    res.json(result);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
+  }
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 // @route   Get /api/admin/faculty/notapproved
 // @desc    check new approval requests from students
@@ -96,19 +206,6 @@ router.get('/faculty/notapproved', auth, async(req, res) => {
     }
   });
 
-// @route   Get api/admin/student/notapproved
-// @desc    check approved students
-// @access  Private
-
-router.get('/student/approved',auth, async (req, res) => {
-    try {
-        const students = await Student.find({approvedByAdmin: true});
-        res.json(students);
-    } catch (error) {
-        console.error(error.message);
-        res.status(500).send(`Server Error: ${error.message}`);
-    }
-})
 
 // @route   Get /api/admin/faculty/approved
 // @desc    check approved faculty
@@ -124,94 +221,51 @@ router.get('/faculty/approved', auth, async(req, res) => {
     }
   });
 
-// @route   Put /api/admin/student/:id
-// @desc    update the student by id
-// @access  Private
-
-router.put('student/:id', auth , async (req, res) => {
-    const id = req.params.id;
-
-    try {
-      const result = await Student.updateOne(
-        { _id: ObjectId(id) },
-        { $set: { accept: true } }
-      );
-
-      if (result.matchedCount === 0) {
-        return res.status(404).json({ msg: `Student with id ${id} not found` });
-      }
-
-      res.json({ message: `Student with id ${id} has been approved.` });
-    } catch (error) {
-      console.error(error.message);
-      res.status(500).send(`Server Error: ${error.message}`);
-    }
-  });
 
 // @route   Delete /api/admin/student/:id
 // @desc    Delete the student by id
 // @access  Private
+//{ "accept":false } send this in body
 
-router.put('/api/admin/faculty/:id', async (req, res) => {
-    const id = req.params.id;
+router.put('/faculty/:id', auth , async (req, res) => {
+  const { accept } = req.body;
+  const facultyFields = {};
+  facultyFields.accept = accept; // Set the "accept" field regardless of its value
 
-    try {
-      const result = await Faculty.updateOne(
-        { _id: ObjectId(id) },
-        { $set: { accept: true } }
-      );
+  try {
+    let faculty = await Faculty.findById(req.params.id);
+    if (!faculty) return res.status(404).json({ msg: "Faculty not found" });
 
-      if (result.matchedCount === 0) {
-        return res.status(404).json({ msg: `Faculty with id ${id} not found` });
-      }
+    const result = await Faculty.findByIdAndUpdate(
+      req.params.id,
+      { $set: facultyFields },
+      { new: true }
+    );
 
-      res.json({ message: `Faculty with id ${id} has been approved.` });
-    } catch (error) {
-      console.error(error.message);
-      res.status(500).send(`Server Error: ${error.message}`);
-    }
-  });
+    res.json(result);
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).send(`Server Error: ${error.message}`);
+  }
+});
 
-// @route   Delete /api/admin/student/:id
-// @desc    Delete the student by id
-// @access  Private
-
-router.delete('student/:id', auth, async (req, res) => {
-    const id = req.params.id;
-
-    try {
-      const result = await collection.deleteOne({ _id: ObjectId(id) });
-
-      if (result.deletedCount === 0) {
-        return res.status(404).json({ msg: `Student with id ${id} not found` });
-      }
-
-      res.json({ message: `Student with id ${id} has been deleted.` });
-    } catch (error) {
-      console.error(error.message);
-      res.status(500).send(`Server Error: ${error.message}`);
-    }
-  });
 
 // @route   Delete /api/admin/faculty/:id
 // @desc    Delete the faculty by id
 // @access  Private
 
-router.delete('faculty/:id', async (req, res) => {
-    const id = req.params.id;
-
-    try {
-      const result = await Faculty.deleteOne({ _id: ObjectId(id) });
-
-      if (result.deletedCount === 0) {
+router.delete('/faculty/:id' ,auth, async (req, res) => {
+   try {
+      const result = await Faculty.findById(req.params.id);
+      if (!result) {
         return res.status(404).json({ msg: `Faculty with id ${id} not found` });
       }
-
-      res.json({ message: `Faculty with id ${id} has been deleted.` });
-    } catch (error) {
+      await Faculty.findByIdAndRemove(req.params.id);
+      res.json({ msg: `Faculty removed.` });
+   } catch (error) {
       console.error(error.message);
       res.status(500).send(`Server Error: ${error.message}`);
-    }
+   }
   });
 
 module.exports = router;

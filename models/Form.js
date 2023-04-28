@@ -11,10 +11,6 @@ const FormSubmissionSchema = new Schema({
     type: String,
     required: true
   },
-  formDescription: {
-    type: String,
-    required: true
-  },
   responces: {
     type: Object,
     required: true
@@ -27,22 +23,3 @@ const FormSubmissionSchema = new Schema({
 
 module.exports = mongoose.model("Form", FormSubmissionSchema);
 
-  // formName: {
-  //   type: String,
-  //   required: true,
-  // },
-  // formDescription: {
-  //   type: String,
-  // },
-  // responses: [
-  //   {
-  //     name: {
-  //       type: String,
-  //       required: true,
-  //     },
-  //     value: {
-  //       type: mongoose.Schema.Types.Mixed,
-  //       required: true,
-  //     },
-  //   },
-  // ],

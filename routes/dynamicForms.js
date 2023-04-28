@@ -25,7 +25,6 @@ router.get("/", auth , async (req, res) => {
 
 router.post("/", [auth, [
       check("formName", "Form Name is required").not().isEmpty(),
-      check("formDescription", "Form Description is required").not().isEmpty(),
       check("fields", "Fields are required").not().isEmpty(),
     ],],
   async (req, res) => {
@@ -34,12 +33,12 @@ router.post("/", [auth, [
       if (!error.isEmpty()) {
         return res.status(400).json({ errors: error.array() });
       }
-      const { formName, formDescription, fields, undertaking } = req.body;
+      const { formName,  fields, undertaking ,approvalHierarchy } = req.body;
       const newForm = new DynamicForm({
         formName,
-        formDescription,
         fields,
         undertaking,
+        approvers: DynamicForm.createApprovers(approvalHierarchy),
       });
       const dynamicform = await newForm.save();
       res.json(dynamicform);

@@ -44,22 +44,26 @@ router.get('/', auth , async (req, res) => {
 // 'formDocument' is the name of the file input field in the form
 router.post('/', [auth, upload.single('formDocument'),[
   check('formName', 'Form Name is required').not().isEmpty(),
-  check('formDescription', 'Form Description is required').not().isEmpty(),
 ]], async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return res.status(400).json({ errors: errors.array() });
   }
-  const { formName, formDescription, responces } = req.body;
+  // const { formName, responces } = req.body;
   try {
-    const form = new Form({
-      student: req.student.id,
-      formName,
-      formDescription,
-      responces
-    });
-    const submittedForm = await form.save();
-    res.json(submittedForm);
+
+    const student = await Student.findOne({ _id:req.student.id});
+    res.json(student);
+
+
+    // const form = new Form({
+    //   student: req.student.id,
+    //   formName,
+    //   formDescription,
+    //   responces
+    // });
+    // const submittedForm = await form.save();
+    // res.json(submittedForm);
   } catch (error) {
     console.error(error.message);
     res.status(500).send(`Server Error: ${error.message}`);

@@ -41,9 +41,9 @@ router.post('/', [
             lastname,
             email,
             password,
-            phoneNumber,
             faculty,
-            facultyRole
+            facultyRole,
+            phoneNumber
         });
 
         const salt = await bcrypt.genSalt(10);

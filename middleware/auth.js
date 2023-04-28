@@ -12,7 +12,6 @@ module.exports = function(req, res, next){
     // if token exists
     try {
         const decoded = jwt.verify(token, config.get('jwtsecret'));
-        console.log(decoded)
         if(decoded.student){
             req.student = decoded.student;
         }else if(decoded.admin){

@@ -169,11 +169,11 @@ router.post(
 );
 
 //-------------------------FACULTY-------------------------//
-// @route   GET api/auth/faculty
+// @route   POST api/auth/faculty
 // @desc    Get the logged FACULTY and token
 // @access  Private
 
-router.get(
+router.post(
   "/faculty",
   [
       check("email", "Please enter a valid email").isEmail(),
