@@ -6,7 +6,7 @@ const auth = require("../middleware/auth.js");
 
 //-------------- these will be created by admin------------------
 // @route   GET api/dynamicforms
-// @desc    Get all the student's forms
+// @desc    Get all the dynamicforms
 // @access  Private
 
 router.get("/", auth, async (req, res) => {
@@ -19,7 +19,41 @@ router.get("/", auth, async (req, res) => {
   }
 });
 
-// @route   POST api/dynamicforms
+// @route   GET api/dynamicforms/student
+// @desc    Get all the dynamicforms with student visibility
+// @access  Private
+
+router.get("/student", auth, async (req, res) => {
+  try {
+    const forms = await DynamicForm.find({ studentVisibility: true }).sort({
+      date: -1,
+    });
+    res.json(forms);
+  } catch (error) {
+    console.log(error.message);
+    res.status(500).send(`Server Error: ${error.message}`);
+  }
+});
+
+
+// @route   GET api/dynamicforms/faculty
+// @desc    Get all dynamicforms with faculty visibility
+// @access  Private
+
+router.get("/faculty", auth, async (req, res) => {
+  try {
+    const forms = await DynamicForm.find({ facultyVisibility: true }).sort({
+      date: -1,
+    });
+    res.json(forms);
+  } catch (error) {
+    console.log(error.message);
+    res.status(500).send(`Server Error: ${error.message}`);
+  }
+});
+
+
+// @route   POST api/dynamicforms ----- applied at client side
 // @desc    Add new form
 // @access  Private
 
