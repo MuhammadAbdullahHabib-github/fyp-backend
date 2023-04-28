@@ -42,6 +42,7 @@ router.post("/",[
       phoneNumber,
       regnum,
       faculty,
+      role,
       batch,
     } = req.body;
     try {
@@ -57,6 +58,7 @@ router.post("/",[
         phoneNumber,
         regnum,
         faculty,
+        role,
         batch,
       });
 

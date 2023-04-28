@@ -108,7 +108,7 @@ router.get("/admin", auth, async (req, res) => {
   }
 });
 
-// @route   GET api/auth/admin
+// @route   GET api/auth/admin ----- applied at client side
 // @desc    Get the logged ADMIN and token
 // @access  Public
 

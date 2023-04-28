@@ -70,7 +70,7 @@ router.post('/', [
 })
 
 //-----------------Student------------------
-// @route   Get api/admin/student/notapproved
+// @route   Get api/admin/student/notapproved ----- applied at client side
 // @desc    check new approval requests from students
 // @access  Private
 
@@ -85,7 +85,7 @@ router.get('/student/notapproved',auth, async (req, res) => {
 })
 
 
-// @route   Get api/admin/student/notapproved
+// @route   Get api/admin/student/approved ----- applied at client side
 // @desc    check approved students
 // @access  Private
 
@@ -178,7 +178,7 @@ router.put('/faculty/:id', auth, async (req, res) => {
   }
 });
 
-// @route   Get /api/admin/faculty/notapproved
+// @route   Get /api/admin/faculty/notapproved ----- applied at client side
 // @desc    check new approval requests from students
 // @access  Private
 
@@ -193,12 +193,11 @@ router.get('/faculty/notapproved', auth, async(req, res) => {
   });
 
 
-// @route   Get /api/admin/faculty/approve
+// @route   Get /api/admin/faculty/approve ----- applied at client side
 // @desc    check approved faculty
 // @access  Private 
 
 router.get('/faculty/approve', auth, async(req, res) => {
-  // res.send('approved faculty')
     try {
         const faculty = await Faculty.find({ accept: true });
         res.json(faculty);
