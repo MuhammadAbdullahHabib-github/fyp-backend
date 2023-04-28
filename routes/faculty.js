@@ -12,7 +12,7 @@ const Course = require('../models/Courses');
 
 
 //-----------------FacultySignUp------------------
-// @route POST api/faculty
+// @route POST api/faculty  ----- applied at client side
 // @desc Register a faculty
 // @access Public
 
@@ -24,7 +24,8 @@ router.post('/', [
     check('password', 'Please enter a password with 8 or more characters').isLength({ min: 8 }),
     check('phoneNumber', 'Please enter a valid phone number').isLength({ min: 11 }),
     check('department', 'Please enter your faculty').not().isEmpty(),
-    check('facultyRole', 'Please enter your faculty role').not().isEmpty(),
+    check('role', 'Please enter your faculty role').not().isEmpty(),
+    check('subrole', 'Please enter your faculty subrole').not().isEmpty(),
     check('phoneNumber', 'Please enter a valid phone number').isLength({ min: 11 }),
 ], async (req, res) => {
     const error = validationResult(req);

@@ -39,7 +39,7 @@ const student = new mongoose.Schema({
         type: String,
         required: true,
     },
-    approvedByAdmin: {
+    accept: {
         type: Boolean,
         default: false,
     },

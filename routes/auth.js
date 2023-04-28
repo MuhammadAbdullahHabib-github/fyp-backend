@@ -28,7 +28,7 @@ router.get("/student", auth, async (req, res) => {
   }
 });
 
-// @route   POST api/auth/student
+// @route   POST api/auth/student ----- applied at client side
 // @desc    Authorize a student and get the token
 // @access  Public
 
@@ -169,7 +169,7 @@ router.post(
 );
 
 //-------------------------FACULTY-------------------------//
-// @route   POST api/auth/faculty
+// @route   POST api/auth/faculty ----- applied at client side
 // @desc    Get the logged FACULTY and token
 // @access  Private
 

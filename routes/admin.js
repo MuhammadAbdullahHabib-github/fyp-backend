@@ -104,9 +104,9 @@ router.get('/student/approved',auth, async (req, res) => {
 // @access  Private
 
 router.put('/student/approval/:id',auth, async (req, res) => {
-  const { approvedByAdmin } = req.body;
+  const { accept } = req.body;
   const studentFields = {};
-  studentFields.approvedByAdmin = approvedByAdmin; // Set the "accept" field regardless of its value
+  studentFields.accept = accept; // Set the "accept" field regardless of its value
 
   try {
     let student = await Student.findById(req.params.id);
