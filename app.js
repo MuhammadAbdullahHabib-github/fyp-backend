@@ -8,12 +8,12 @@ const cors = require('cors');
 
 // use cors middleware to allow cross-origin resource sharing
 app.use(cors());
-// app.use(cors({
-//     origin: 'http://localhost:3000', // Replace with your client-side origin
-//     methods: ['GET', 'POST', 'PUT', 'DELETE'],
-//     allowedHeaders: ['Content-Type', 'Authorization','x-auth-token']
-//   }));
-  
+app.use(cors({
+  origin: 'http://localhost:3000', // Replace with your client-side origin
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'x-auth-token']
+}));
+
 
 // use body-parser middleware to parse JSON data
 app.use(bodyParser.json());
