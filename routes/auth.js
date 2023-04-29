@@ -72,6 +72,8 @@ router.post(
       const payload = {
         student: {
           id: student.id,
+          faculty: student.faculty,
+          regnumber: student.regnum
         },
       };
       jwt.sign(

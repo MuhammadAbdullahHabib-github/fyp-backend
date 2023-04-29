@@ -8,7 +8,8 @@ const auth = require('../middleware/auth');
 
 const Faculty = require('../models/Faculty');
 const Course = require('../models/Courses');
-// const Form = require('../models/Forms');
+const Form = require('../models/Form');
+const Student = require('../models/Student');
 
 
 //-----------------FacultySignUp------------------
@@ -186,19 +187,58 @@ router.delete('/course/:code', auth, async (req, res) => {
 // @desc Get all student forms
 // @access Private
 
-router.get('/studentForms', auth, async (req, res) => {
-    try {
-        const faculty = await Faculty.findById(req.faculty.id);
-        const roles = faculty.externalRoles.map((externalRole) => externalRole.role);
-        for (const role of roles) {
-          // const forms = await Form.find({ role: role }).populate('student');
-        }
-      
-    } catch (error) {
-        console.error(error.message);
-        res.status(500).send(`Server Error: ${error.message}`);
+router.get('/studentForms', auth , async (req, res) => {
+  try {
+    const faculty = await Faculty.findById(req.faculty.id);
+    if (!faculty) {
+      return res.status(404).json({ msg: "Faculty not found" });
     }
+    const numberOfApprovals = faculty.externalRoles.length;
+    const externalFaculty = faculty.externalRoles.map((externalRole) => externalRole.externalfaculty);
+    const roles = faculty.externalRoles.map((externalRole) => externalRole.role);
+    const facultyForm = [];
+
+    for (let i = 0; i < numberOfApprovals; i++) {
+      const form = await Form.find({ 'approvers.role': roles[i]});
+      facultyForm.push(form);
+    }
+    // const student = await Student.findById(facultyForm.student);
+    res.send(facultyForm);
+
+
+    // const forms = await Form.find({ 'approvers.externalfaculty': externalFaculty[i] });
+      // res.send(forms);
+
+    // // Get the faculty member's role(s)
+    // const role = faculty.externalRoles.map((externalRole) => externalRole.role);
+    // // [advisor, dean]
+    // const forms = await Form.find({ 'approvers.role': { $in: role } });
+
+    // const externalFaculties = faculty.externalRoles.map((externalRole) => externalRole.externalfaculty);
+    // res.send(externalFaculties);
+    //  for (const form of forms) {
+    // // Get the approved forms for the current role
+    //     let i = 0;
+    //     const student = await Student.findById(form.student);
+    //     if (student.faculty == externalFaculties[i]) {
+    //       facultyForms.push(form);
+    //     }
+    //     i = i + 1;
+    // };
+    // console.log(facultyForms);
+
+    //   // Add the approved forms to the result array
+    //   facultyForms.push(...approvedForms);
+    // }
+
+    // res.json(facultyForms);
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).send(`Server Error: ${error.message}`);
+  }
 });
+
+
 
 
 module.exports = router;
