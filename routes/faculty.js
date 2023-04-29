@@ -78,6 +78,25 @@ router.post('/', [
   
 });
 
+// @route GET api/faculty
+// @desc getting data of faculty
+// @access Private
+
+
+router.get('/', auth, async (req, res) => {
+  try {
+    const faculty = await Faculty.findById(req.faculty.id).select('-password');
+    if (!faculty) {
+      return res.status(404).json({ msg: "Faculty not found" });
+    }
+    res.json(faculty);
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).send(`Server Error: ${error.message}`);
+  }
+});
+
+
 //-----------------FacultyCourses------------------
 // @route POST api/faculty
 // @desc Add multiple courses a faculty
