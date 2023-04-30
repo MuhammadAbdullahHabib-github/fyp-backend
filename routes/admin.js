@@ -320,23 +320,33 @@ router.delete('/faculty/:id' ,auth, async (req, res) => {
 
 
   // -----------------Admin adding cources in courses list and geeting them -----------
-  // @route   POST api/admin/course
-// @desc    Add a new course
-// @access  Private (Admin)
+//   // @route   POST api/admin/course
+// // @desc    Add a new course
+// // @access  Private (Admin)
+// router.post("/course", auth, async (req, res) => {
+
 router.post("/course", auth, async (req, res) => {
   try {
     const { name } = req.body;
 
-    // Create a new course document
-    const newCourse = new Course({
-      courses: [{ name }],
-    });
+    // Find the existing course document
+    let courseDocument = await Course.findOne();
 
-    // Save the new course document
-    await newCourse.save();
+    // If no course document exists, create a new one with the given course
+    if (!courseDocument) {
+      courseDocument = new Course({
+        courses: [{ name }],
+      });
+    } else {
+      // If a course document exists, add the new course to the courses array
+      courseDocument.courses.push({ name });
+    }
 
-    // Send the saved course document as a response
-    res.json(newCourse);
+    // Save the course document
+    await courseDocument.save();
+
+    // Send the updated course document as a response
+    res.json(courseDocument);
   } catch (error) {
     console.error(error.message);
     res.status(500).send(`Server Error: ${error.message}`);
@@ -349,7 +359,7 @@ router.post("/course", auth, async (req, res) => {
 router.get("/course",async (req, res) => {
   try {
     // Find all course documents
-    const courses = await Course.find();
+    const courses = await Course.find().select('courses.name');
 
     // Send the found courses as a response
     res.json(courses);
