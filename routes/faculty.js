@@ -207,50 +207,6 @@ router.delete('/course/:code', auth, async (req, res) => {
 // @desc get the form according to hirerchcy like advisor or dean
 // @access Private
 
-
-// router.get('/studentForms', auth, async (req, res) => {
-//   try {
-//     const faculty = await Faculty.findById(req.faculty.id);
-//     if (!faculty) {
-//       return res.status(404).json({ msg: "Faculty not found" });
-//     }
-//     const numberOfApprovals = faculty.externalRoles.length;
-
-//     const matchedForms = {
-//       advisor: [],
-//       dean: [],
-//     };
-
-//     for (let i = 0; i < numberOfApprovals; i++) {
-//       const role = faculty.externalRoles[i].role;
-//       if (role === 'advisor' || role === 'dean') {
-//         const forms = await Form.find({ 'approvers.role': role, 'faculty': faculty.externalRoles[i].externalfaculty }).populate('student');
-
-//         forms.forEach((form) => {
-//           const approverIndex = form.approvers.findIndex(approver => approver.role === role);
-          
-//           if (approverIndex > 0 && !form.approvers[approverIndex - 1].approved) {
-//             // Skip the form if the previous approver hasn't approved it yet
-//             return;
-//           }
-
-//           if (role === 'advisor') {
-//             matchedForms.advisor.push(form);
-//           } else if (role === 'dean') {
-//             matchedForms.dean.push(form);
-//           }
-//         });
-//       }
-//     }
-
-//     res.json(matchedForms);
-//   } catch (error) {
-//     console.error(error.message);
-//     res.status(500).send(`Server Error: ${error.message}`);
-//   }
-// });
-
-
 router.get('/studentForms', auth, async (req, res) => {
   try {
     const faculty = await Faculty.findById(req.faculty.id);
@@ -300,7 +256,7 @@ router.get('/studentForms', auth, async (req, res) => {
 
 
 // @route PUT api/faculty//studentForms/:id
-// @desc UPdate the form according to hirerchcy
+// @desc Approved the form according to hirerchcy
 // @access Private
 
 
@@ -359,6 +315,11 @@ router.put('/studentForms/:id', auth, async (req, res) => {
     res.status(500).send(`Server Error: ${error.message}`);
   }
 });
+
+
+// @route PUT api/faculty//studentForms/:id
+// @desc disapproved the form according to hirerchcy
+// @access Private
 
 
 

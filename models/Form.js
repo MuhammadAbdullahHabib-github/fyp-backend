@@ -14,6 +14,10 @@ const ApproverSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
+  dispproved:{
+    type: Boolean,
+    default: false,
+  }
 });
 
 const FormSubmissionSchema = new Schema({
@@ -53,6 +57,7 @@ FormSubmissionSchema.statics.createApprovers = function (approvalHierarchy) {
     role: role,
     order: index + 1,
     approved: false,
+    dispproved:false,
   }));
 };
 
