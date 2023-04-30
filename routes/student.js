@@ -124,13 +124,61 @@ router.get("/tracking", auth , async (req, res) => {
 
 router.get("/submittedforms", auth , async (req, res) => {
     try {
-      const form = await Form.find({ student: req.student.id, status: "submitted" }).sort({ date: -1 });
-      res.send(form);
+      const form = await Form.find({ student: req.student.id}).count();
+      res.json({"submuttedFormValue": form});
     }catch(error){
         console.error(error.message);
         res.status(500).send(`Server Error: ${error.message}`);
     }
 });
+
+// @route   GET api/student/approvedforms
+// @desc    Get the count of approved forms for a student
+// @access  Private
+
+router.get("/approvedforms", auth, async (req, res) => {
+  try {
+    const studentId = req.student.id;
+    const forms = await Form.find({ student: studentId });
+
+    const approvedForms = forms.filter(form => {
+      return form.approvers.every(approver => approver.approved);
+    });
+
+    res.json({ "approvedFormCount": approvedForms.length });
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).send(`Server Error: ${error.message}`);
+  }
+});
+
+// @route   GET api/student/pendingforms
+// @desc    Get the count of pending forms for a student
+// @access  Private
+
+router.get("/pendingforms", auth, async (req, res) => {
+  try {
+    const studentId = req.student.id;
+    const forms = await Form.find({ student: studentId });
+
+    const pendingForms = forms.filter(form => {
+      let isPending = false;
+      for (let i = 0; i < form.approvers.length; i++) {
+        if (!form.approvers[i].approved) {
+          isPending = true;
+          break;
+        }
+      }
+      return isPending;
+    });
+
+    res.json({ "pendingFormCount": pendingForms.length });
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).send(`Server Error: ${error.message}`);
+  }
+});
+
 
 
 module.exports = router;
