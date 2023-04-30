@@ -52,17 +52,7 @@ router.post("/",[
       if (student) {
         return res.status(400).json({ msg: "Student already exists" });
       }
-      student = new Student({
-        firstname,
-        lastname,
-        email,
-        password,
-        phoneNumber,
-        regnum,
-        faculty,
-        role,
-        batch,
-      });
+      student = new Student({ firstname,lastname,email,password,phoneNumber,regnum,faculty,role,batch});
 
       const salt = await bcrypt.genSalt(10);
       student.password = await bcrypt.hash(password, salt);
@@ -88,18 +78,65 @@ router.post("/",[
 
 // --------------------------------------------------------------
 // @route   GET api/student
-// @desc    Get all forms of students 
+// @desc    Get students details 
 // @access  Private
 
 router.get("/", auth , async (req, res) => {
     try {
-      const form = await Form.find({ student: req.student.id }).sort({ date: -1 });
-      res.send(form);
+      let student = await Student.findById(req.student.id);
+      res.send(student);
     }catch(error){
         console.error(error.message);
         res.status(500).send(`Server Error: ${error.message}`);
     }
 });
+
+
+// @route   PUT api/student
+// @desc    Update student details
+// @access  Private
+
+router.put("/", auth, async (req, res) => {
+  
+  const {firstname,lastname,email,password,phoneNumber,regnum,faculty,role,batch,courses} = req.body;
+
+  const studentFields = {};
+  if (firstname) studentFields.firstname = firstname;
+  if (lastname) studentFields.lastname = lastname;
+  if (email) studentFields.email = email;
+  if (phoneNumber) studentFields.phoneNumber = phoneNumber;
+  if (regnum) studentFields.regnum = regnum;
+  if (faculty) studentFields.faculty = faculty;
+  if (role) studentFields.role = role;
+  if (batch) studentFields.batch = batch;
+  if (courses) studentFields.courses = courses;
+
+  try {
+    let student = await Student.findById(req.student.id);
+    if (!student) return res.status(404).json({ msg: "Student not found" });
+
+    if (password) {
+      const salt = await bcrypt.genSalt(10);
+      studentFields.password = await bcrypt.hash(password, salt);
+    }
+
+    student = await Student.findByIdAndUpdate(
+      req.student.id,
+      { $set: studentFields },
+      { new: true }
+    );
+
+    res.json(student);
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).send(`Server Error: ${error.message}`);
+  }
+});
+
+
+
+
+
 //--------------------------------------------------------------
 // @route   GET api/student
 // @desc    Get all al form hirarchy noyifications

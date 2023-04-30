@@ -46,6 +46,9 @@ const student = new mongoose.Schema({
     date: {
         type: Date,
         default: Date.now,
+    },
+    courses:{
+    type: [String],
     }
 });
 
