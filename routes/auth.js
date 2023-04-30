@@ -73,7 +73,8 @@ router.post(
         student: {
           id: student.id,
           faculty: student.faculty,
-          regnumber: student.regnum
+          regnumber: student.regnum,
+          role: student.role,
         },
       };
       jwt.sign(
@@ -214,6 +215,7 @@ router.post(
           id: faculty.id,
           firstname: faculty.firstname,
           lastname: faculty.lastname,
+          role: faculty.role,
         },
       };
       jwt.sign(
