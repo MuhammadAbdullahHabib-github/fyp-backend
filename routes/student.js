@@ -83,7 +83,7 @@ router.post("/",[
 
 router.get("/", auth , async (req, res) => {
     try {
-      let student = await Student.findById(req.student.id);
+      let student = await Student.findById(req.student.id).select('-password');
       res.send(student);
     }catch(error){
         console.error(error.message);

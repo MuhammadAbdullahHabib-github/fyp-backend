@@ -96,6 +96,48 @@ router.get('/', auth, async (req, res) => {
   }
 });
 
+// @route   PUT api/faculty
+// @desc    Update faculty details
+// @access  Private
+
+router.put("/", auth, async (req, res) => {
+  const {firstname,lastname,email,password,department,role,subrole,accept,phoneNumber,externalRoles,courses} = req.body;
+
+  const facultyFields = {};
+  if (firstname) facultyFields.firstname = firstname;
+  if (lastname) facultyFields.lastname = lastname;
+  if (email) facultyFields.email = email;
+  if (department) facultyFields.department = department;
+  if (role) facultyFields.role = role;
+  if (subrole) facultyFields.subrole = subrole;
+  if (accept !== undefined) facultyFields.accept = accept;
+  if (phoneNumber) facultyFields.phoneNumber = phoneNumber;
+  if (externalRoles) facultyFields.externalRoles = externalRoles;
+  if (courses) facultyFields.courses = courses;
+
+  try {
+    let faculty = await Faculty.findById(req.faculty.id);
+    if (!faculty) return res.status(404).json({ msg: "Faculty not found" });
+
+    if (password) {
+      const salt = await bcrypt.genSalt(10);
+      facultyFields.password = await bcrypt.hash(password, salt);
+    }
+
+    faculty = await Faculty.findByIdAndUpdate(
+      req.faculty.id,
+      { $set: facultyFields },
+      { new: true }
+    );
+
+    res.json(faculty);
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).send(`Server Error: ${error.message}`);
+  }
+});
+
+
 
 //-----------------FacultyCourses------------------
 // @route POST api/faculty

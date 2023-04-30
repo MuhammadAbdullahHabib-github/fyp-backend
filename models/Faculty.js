@@ -37,6 +37,9 @@ const FacultySchema = mongoose.Schema({
     type: String,
     required: true,
   },
+  courses:{
+    type:[String]
+  },
   externalRoles: [
     {
       externalfaculty: {
