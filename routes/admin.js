@@ -9,6 +9,7 @@ const Admin = require('../models/Admin.js');
 const Student = require('../models/Student.js');
 const Faculty = require('../models/Faculty.js');
 const auth = require('../middleware/auth.js');
+const Course = require("../models/Courses.js");
 
 
 //-----------------Admin------------------
@@ -143,6 +144,69 @@ router.delete('/student/:id',auth, async (req, res) => {
   }
 });
 
+
+//-----------------Admin geting data of single student ----------
+
+
+// @route   GET api/admin/student/:id
+// @desc    Get a single student by ID
+// @access  Private
+
+router.get('/student/data/:id', auth, async (req, res) => {
+  try {
+    let student = await Student.findById(req.params.id).select('-password');
+    if (!student) return res.status(404).json({ msg: "Student not found" });
+
+    res.json(student);
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).send(`Server Error: ${error.message}`);
+  }
+});
+
+
+// @route   PUT api/student/data/:id
+// @desc    Update a single student by ID for admin
+// @access  Private (admin)
+
+router.put('/student/data/:id', auth, async (req, res) => {
+  
+  const {firstname,lastname,email,password,phoneNumber,regnum,faculty,role,batch,courses} = req.body;
+
+  const studentFields = {};
+  if (firstname) studentFields.firstname = firstname;
+  if (lastname) studentFields.lastname = lastname;
+  if (email) studentFields.email = email;
+  if (phoneNumber) studentFields.phoneNumber = phoneNumber;
+  if (regnum) studentFields.regnum = regnum;
+  if (faculty) studentFields.faculty = faculty;
+  if (role) studentFields.role = role;
+  if (batch) studentFields.batch = batch;
+  if (courses) studentFields.courses = courses;
+
+  try {
+    let student = await Student.findById(req.params.id);
+    if (!student) return res.status(404).json({ msg: "Student not found" });
+
+    if (password) {
+      const salt = await bcrypt.genSalt(10);
+      studentFields.password = await bcrypt.hash(password, salt);
+    }
+
+    student = await Student.findByIdAndUpdate(
+      req.params.id,
+      { $set: studentFields },
+      { new: true }
+    );
+
+    res.json(student);
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).send(`Server Error: ${error.message}`);
+  }
+});
+
+
 //-----------------Faculty------------------
 // @route   Put /api/admin/faculty/
 // @desc    add external role to faculty
@@ -160,8 +224,8 @@ router.put('/faculty/:id', auth, async (req, res) => {
 
     // Create a new role object based on the request body
     const newRole = {
-      externalfaculty: externalrole[0].externalfaculty,
-      role: externalrole[0].role,
+      externalfaculty: externalrole[0].externalfaculty || null,
+      role: externalrole[0].role || null,
       batch: externalrole[0].batch || null, // Use null if batch is not provided
     };
 
@@ -253,5 +317,46 @@ router.delete('/faculty/:id' ,auth, async (req, res) => {
       res.status(500).send(`Server Error: ${error.message}`);
    }
   });
+
+
+  // -----------------Admin adding cources in courses list and geeting them -----------
+  // @route   POST api/admin/course
+// @desc    Add a new course
+// @access  Private (Admin)
+router.post("/course", auth, async (req, res) => {
+  try {
+    const { name } = req.body;
+
+    // Create a new course document
+    const newCourse = new Course({
+      courses: [{ name }],
+    });
+
+    // Save the new course document
+    await newCourse.save();
+
+    // Send the saved course document as a response
+    res.json(newCourse);
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).send(`Server Error: ${error.message}`);
+  }
+});
+
+// @route   GET api/course
+// @desc    Get all courses
+// @access  Private (Admin)
+router.get("/course",async (req, res) => {
+  try {
+    // Find all course documents
+    const courses = await Course.find();
+
+    // Send the found courses as a response
+    res.json(courses);
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).send(`Server Error: ${error.message}`);
+  }
+});
 
 module.exports = router;

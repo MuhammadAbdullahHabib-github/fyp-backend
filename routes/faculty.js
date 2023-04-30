@@ -5,12 +5,12 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const config = require('config');	
 const auth = require('../middleware/auth');
-const mongoose = require('mongoose');
+
 
 const Faculty = require('../models/Faculty');
-const Course = require('../models/Courses');
 const Form = require('../models/Form');
 const Student = require('../models/Student');
+
 
 
 //-----------------FacultySignUp------------------
@@ -79,7 +79,7 @@ router.post('/', [
 });
 
 // @route GET api/faculty
-// @desc getting data of faculty
+// @desc getting data of single faculty member on the base of jwt token
 // @access Private
 
 
@@ -96,11 +96,11 @@ router.get('/', auth, async (req, res) => {
   }
 });
 
-// @route   PUT api/faculty
-// @desc    Update faculty details
+// @route   PUT api/faculty/update
+// @desc    Update single faculty member details on the base of jwt token
 // @access  Private
 
-router.put("/", auth, async (req, res) => {
+router.put("/update", auth, async (req, res) => {
   const {firstname,lastname,email,password,department,role,subrole,accept,phoneNumber,externalRoles,courses} = req.body;
 
   const facultyFields = {};
@@ -137,112 +137,6 @@ router.put("/", auth, async (req, res) => {
   }
 });
 
-
-
-//-----------------FacultyCourses------------------
-// @route POST api/faculty
-// @desc Add multiple courses a faculty
-// @access Private
-
-router.post('/courses', [
-    auth,
-    [
-    check('courses', 'Please enter your courses').not().isEmpty(),
-  ]], async (req, res) => {
-    const {courses} = req.body;
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
-    }
-    try {
-      let course = new Course({
-        facultyMemberId: req.faculty.id,
-        courses: courses
-      });
-      const courseAdded = await course.save();
-      res.send(courseAdded);
-    } catch(error){
-      console.error(error.message);
-      res.status(500).send(`Server Error: ${error.message}`);
-    }
-  });
-
-
-// @route POST api/faculty
-// @desc Add  one course a faculty
-// @access Private
-
-router.post('/course', [
-    auth,
-    [
-      check('code', 'Please enter a course code').not().isEmpty(),
-      check('title', 'Please enter a course title').not().isEmpty()
-    ]
-  ], async (req, res) => {
-    const { code, title } = req.body;
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
-    }
-    try {
-      const course = await Course.findOneAndUpdate(
-        { facultyMemberId: req.faculty.id },
-        { $push: { courses: { code, title } } },
-        { new: true }
-      );
-      if (!course) {
-        return res.status(404).json({ msg: 'Course not found' });
-      }
-      res.send(course);
-    } catch (error) {
-      console.error(error.message);
-      res.status(500).send(`Server Error: ${error.message}`);
-    }
-  });
-  
-// @route GET api/faculty/course
-// @desc Get all courses of a faculty member
-// @access Private
-
-router.get('/course', auth, async (req, res) => {
-    try {
-      const courses = await Course.find({ facultyMemberId: req.faculty.id });
-      res.json(courses);
-    } catch (error) {
-      console.error(error.message);
-      res.status(500).send(`Server Error: ${error.message}`);
-    }
-  });
-
-// @route DELETE api/faculty/course
-// @desc Delete a course of a faculty member
-// @access Private
-
-router.delete('/course/:code', auth, async (req, res) => {
-    try {
-      const course = await Course.findOne({ facultyMemberId: req.faculty.id });
-      if (!course) {
-        return res.status(404).json({ msg: 'Course not found' });
-      }
-  
-      // Find the course with the matching code
-      const courseIndex = course.courses.findIndex(c => c.code === req.params.code);
-      if (courseIndex === -1) {
-        return res.status(404).json({ msg: 'Course not found' });
-      }
-  
-      // Remove the course from the array
-      course.courses.splice(courseIndex, 1);
-  
-      // Save the updated course document
-      await course.save();
-  
-      res.json({ msg: 'Course removed' });
-    } catch (err) {
-      console.error(err.message);
-      res.status(500).send('Server Error');
-    }
-  });
 
 //-----------------Getting All Student Forms------------------
 // @route GET api/faculty/studentForms

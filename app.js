@@ -34,6 +34,7 @@ app.use('/api/faculty', require('./routes/faculty.js'));
 app.use('/api/forms', require('./routes/forms.js'));
 app.use('/api/student', require('./routes/student.js'));
 
+
 app.get('/', (req, res) => { res.json({message:'Hello World!'})})
 
 const PORT = config.get('PORT') || 5000;
