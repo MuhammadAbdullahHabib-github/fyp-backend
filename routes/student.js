@@ -154,6 +154,29 @@ router.get("/approvedforms", auth, async (req, res) => {
   }
 });
 
+
+// @route   GET api/student/disapprovedforms
+// @desc    Get the count of disapproved forms for a student
+// @access  Private
+
+router.get("/disapprovedforms", auth, async (req, res) => {
+  try {
+    const studentId = req.student.id;
+    const forms = await Form.find({ student: studentId });
+
+    const disapprovedForms = forms.filter(form => {
+      return form.approvers.some(approver => approver.disapproved);
+    });
+
+    res.json({ "disapprovedFormCount": disapprovedForms.length });
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).send(`Server Error: ${error.message}`);
+  }
+});
+
+
+
 // @route   GET api/student/pendingforms
 // @desc    Get the count of pending forms for a student
 // @access  Private
