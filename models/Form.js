@@ -14,7 +14,7 @@ const ApproverSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
-  dispproved:{
+  disapproved:{
     type: Boolean,
     default: false,
   }
