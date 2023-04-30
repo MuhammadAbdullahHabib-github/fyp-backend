@@ -49,7 +49,7 @@ router.post('/', [auth, upload.single('formDocument'),[
   if (!errors.isEmpty()) {
     return res.status(400).json({ errors: errors.array() });
   }
-  const { formName, responces, approvalHierarchy, id , faculty } = req.body;
+  const { formName, responces, approvalHierarchy, faculty } = req.body;
   try {
     const student = await Student.findOne({ _id:req.student.id});
     const approvers = Form.createApprovers(approvalHierarchy);

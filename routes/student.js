@@ -5,6 +5,8 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const config = require("config");
 const Student = require("../models/Student.js");
+const auth = require("../middleware/auth.js");
+const Form = require("../models/Form.js");
 
 // @route   POST api/student
 // @desc    Register a student
@@ -83,5 +85,39 @@ router.post("/",[
     }
   }
 );
+
+// --------------------------------------------------------------
+// @route   GET api/student
+// @desc    Get all forms of students 
+// @access  Private
+
+router.get("/", auth , async (req, res) => {
+    try {
+      const form = await Form.find({ student: req.student.id }).sort({ date: -1 });
+      res.send(form);
+    }catch(error){
+        console.error(error.message);
+        res.status(500).send(`Server Error: ${error.message}`);
+    }
+});
+//--------------------------------------------------------------
+// @route   GET api/student
+// @desc    Get all al form hirarchy noyifications
+// @access  Private
+
+router.get("/tracking", auth , async (req, res) => {
+    try {
+      const form = await Form.find({ student: req.student.id }).sort({ date: -1 }).select("approvers");
+      if (!form) {
+        return res.status(404).json({ msg: "Form not found" });
+      }
+      res.send(form);
+    }catch(error){
+        console.error(error.message);
+        res.status(500).send(`Server Error: ${error.message}`);
+    }
+});
+
+
 
 module.exports = router;
