@@ -255,7 +255,7 @@ router.get('/studentForms', auth, async (req, res) => {
 });
 
 
-// @route PUT api/faculty//studentForms/:id
+// @route PUT api/faculty/studentForms/:id
 // @desc Approved the form according to hirerchcy
 // @access Private
 
@@ -266,9 +266,6 @@ router.put('/studentForms/:id', auth, async (req, res) => {
     if (!faculty) {
       return res.status(404).json({ msg: "Faculty not found" });
     }
-    if (!faculty) {
-        return res.status(404).json({ msg: "Faculty not found" });
-      }
     
       const formId = req.params.id;
       const form = await Form.findById(formId);
@@ -317,7 +314,7 @@ router.put('/studentForms/:id', auth, async (req, res) => {
 });
 
 
-// @route PUT api/faculty//studentForms/:id
+// @route PUT api/faculty/studentForms/:id
 // @desc disapproved the form according to hirerchcy
 // @access Private
 
