@@ -127,7 +127,7 @@ router.get("/tracking", auth , async (req, res) => {
 router.get("/submittedforms", auth , async (req, res) => {
     try {
       const form = await Form.find({ student: req.student.id}).count();
-      res.json({"submuttedFormValue": form});
+      res.json({"submittedFormValue": form});
     }catch(error){
         console.error(error.message);
         res.status(500).send(`Server Error: ${error.message}`);
