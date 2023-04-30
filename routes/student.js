@@ -118,6 +118,19 @@ router.get("/tracking", auth , async (req, res) => {
     }
 });
 
+// @route   GET api/student/submittedforms
+// @desc    Get all submitted forms of students
+// @access  Private
+
+router.get("/submittedforms", auth , async (req, res) => {
+    try {
+      const form = await Form.find({ student: req.student.id, status: "submitted" }).sort({ date: -1 });
+      res.send(form);
+    }catch(error){
+        console.error(error.message);
+        res.status(500).send(`Server Error: ${error.message}`);
+    }
+});
 
 
 module.exports = router;
