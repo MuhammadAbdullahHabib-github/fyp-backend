@@ -57,7 +57,7 @@ FormSubmissionSchema.statics.createApprovers = function (approvalHierarchy) {
     role: role,
     order: index + 1,
     approved: false,
-    dispproved:false,
+    disapproved:false,
   }));
 };
 
