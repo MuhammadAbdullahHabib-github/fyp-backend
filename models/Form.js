@@ -24,7 +24,10 @@ const FormSubmissionSchema = new Schema({
   student: {
     type: Schema.Types.ObjectId,
     ref: "student",
-    required: true,
+  },
+  faculty:{
+    type: Schema.Types.ObjectId,
+    ref: "faculty",
   },
   formName: {
     type: String,
