@@ -207,6 +207,66 @@ router.put('/student/data/:id', auth, async (req, res) => {
 });
 
 
+// @route   GET api/admin/faculty/:id
+// @desc    Get a single faculty by ID
+// @access  Private
+
+router.get('/faculty/data/:id', auth, async (req, res) => {
+  try {
+    let faculty = await Faculty.findById(req.params.id).select('-password');
+    if (!faculty) return res.status(404).json({ msg: "Faculty not found" });
+
+    res.json(faculty);
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).send(`Server Error: ${error.message}`);
+  }
+});
+
+module.exports = router;
+
+
+// @route   PUT api/admin/faculty/data/:id
+// @desc    Update a single faculty by ID
+// @access  Private
+
+router.put('/faculty/data/:id', auth, async (req, res) => {
+  
+  const { firstname, lastname, email, password, phoneNumber, department, role, subrole, accept, courses, externalRoles } = req.body;
+
+  const facultyFields = {};
+  if (firstname) facultyFields.firstname = firstname;
+  if (lastname) facultyFields.lastname = lastname;
+  if (email) facultyFields.email = email;
+  if (phoneNumber) facultyFields.phoneNumber = phoneNumber;
+  if (department) facultyFields.department = department;
+  if (role) facultyFields.role = role;
+  if (subrole) facultyFields.subrole = subrole;
+  if (courses) facultyFields.courses = courses;
+  if (externalRoles) facultyFields.externalRoles = externalRoles;
+
+  try {
+    let faculty = await Faculty.findById(req.params.id);
+    if (!faculty) return res.status(404).json({ msg: "Faculty not found" });
+
+    if (password) {
+      const salt = await bcrypt.genSalt(10);
+      facultyFields.password = await bcrypt.hash(password, salt);
+    }
+
+    faculty = await Faculty.findByIdAndUpdate(
+      req.params.id,
+      { $set: facultyFields },
+      { new: true }
+    );
+
+    res.json(faculty);
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).send(`Server Error: ${error.message}`);
+  }
+});
+
 //-----------------Faculty------------------
 // @route   Put /api/admin/faculty/
 // @desc    add external role to faculty
