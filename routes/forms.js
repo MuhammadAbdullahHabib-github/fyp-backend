@@ -10,18 +10,17 @@ const Student = require('../models/Student');
 const Form = require('../models/Form');
 const Faculty = require('../models/Faculty');
 
-//------------------------------------------------------------------------------------------
-const storage = multer.diskStorage({
-  destination: function(req,file,callback){
-    return callback(null, './uploads');
-  },
-  filename: function(req, file, callback){
-     callback(null, file.fieldname + '-' + Date.now() + path.extname(file.originalname));
-  }
-});
-
-const upload = multer({storage: storage});
-//------------------------------------------------------------------------------------------ 
+//-----------------------------------------------------------------------------------------//-
+const storage = multer.diskStorage({                                                       //- 
+  destination: function(req,file,callback){                                                //-                   
+    return callback(null, './uploads');                                                    //-                        
+  },                                                                                       //-                         
+  filename: function(req, file, callback){                                                 //-                  
+     callback(null, file.fieldname + '-' + Date.now() + path.extname(file.originalname));  //-        
+  }                                                                                        //-
+});                                                                                        //- 
+const upload = multer({storage: storage});                                                 //-
+//-----------------------------------------------------------------------------------------//-
 
 // @route   GET api/forms
 // @desc    Get all the specific student's forms
@@ -40,7 +39,7 @@ router.get('/', auth , async (req, res) => {
 });
 
 // @route   GET api/forms/faculty
-// @desc    Get all the specific student's forms
+// @desc    Get all the specific faculty's forms
 // @access  Private
 
 router.get('/faculty', auth , async (req, res) => {
@@ -102,6 +101,9 @@ router.post('/faculty', [auth, upload.single('formDocument'), [
   const { formName, responces, approvalHierarchy,department} = req.body;
   try {
     const faculty = await Faculty.findOne({ _id: req.faculty.id });
+    if(!faculty){
+      return res.status(400).json({ msg: 'Faculty not found' });
+    }
     const approvers = Form.createApprovers(approvalHierarchy);
     const form = new Form({
       faculty: req.faculty.id,
