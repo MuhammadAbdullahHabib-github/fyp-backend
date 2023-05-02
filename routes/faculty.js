@@ -149,6 +149,7 @@ router.get('/studentForms', auth, async (req, res) => {
     if (!faculty) {
       return res.status(404).json({ msg: "Faculty not found" });
     }
+    const externalRole = faculty.externalRoles[0].role;
     const numberOfApprovals = faculty.externalRoles.length;
     const matchedForms = {
       advisor: [],
@@ -181,7 +182,7 @@ router.get('/studentForms', auth, async (req, res) => {
       }
     }
 
-    res.json(matchedForms);
+    res.json(matchedForms[externalRole]);
   } catch (error) {
     console.error(error.message);
     res.status(500).send(`Server Error: ${error.message}`);
