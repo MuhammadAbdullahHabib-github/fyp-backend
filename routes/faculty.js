@@ -150,7 +150,6 @@ router.get('/studentForms', auth, async (req, res) => {
       return res.status(404).json({ msg: "Faculty not found" });
     }
     const numberOfApprovals = faculty.externalRoles.length;
-
     const matchedForms = {
       advisor: [],
       dean: [],
@@ -160,7 +159,6 @@ router.get('/studentForms', auth, async (req, res) => {
       const role = faculty.externalRoles[i].role;
       if (role === 'advisor' || role === 'dean') {
         const forms = await Form.find({ 'approvers.role': role, 'faculty': faculty.externalRoles[i].externalfaculty }).populate('student');
-
         forms.forEach((form) => {
           const approverIndex = form.approvers.findIndex(approver => approver.role === role);
           
@@ -303,10 +301,10 @@ router.put('/studentForms/disapprove/:id', auth, async (req, res) => {
   }
 });
 
-// ---------------------------Student Dashboard Apis---------------------------------
+// ---------------------------Faculty Dashboard Apis---------------------------------
 
 // @route   GET api/faculty/submittedforms
-// @desc    Get all submitted forms of students
+// @desc    Get all submitted forms of faculty
 // @access  Private
 
 router.get("/submittedforms", auth , async (req, res) => {
@@ -320,7 +318,7 @@ router.get("/submittedforms", auth , async (req, res) => {
 });
 
 // @route   GET api/faculty/approvedforms
-// @desc    Get the count of approved forms for a student
+// @desc    Get the count of approved forms for a faculty
 // @access  Private
 
 router.get("/approvedforms", auth, async (req, res) => {
@@ -340,8 +338,8 @@ try {
 });
 
 
-// @route   GET api/student/disapprovedforms
-// @desc    Get the count of disapproved forms for a student
+// @route   GET api/faculty/disapprovedforms
+// @desc    Get the count of disapproved forms for a faculty
 // @access  Private
 
 router.get("/disapprovedforms", auth, async (req, res) => {
@@ -362,8 +360,8 @@ try {
 
 
 
-// @route   GET api/student/pendingforms
-// @desc    Get the count of pending forms for a student
+// @route   GET api/faculty/pendingforms
+// @desc    Get the count of pending forms for a faculty
 // @access  Private
 
 router.get("/pendingforms", auth, async (req, res) => {
