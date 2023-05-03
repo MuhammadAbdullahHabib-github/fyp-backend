@@ -23,7 +23,7 @@ router.get("/", auth, async (req, res) => {
 // @desc    Get dynamicforms by id
 // @access  Private
 
-router.get("/", auth, async (req, res) => {
+router.get("/:id", auth, async (req, res) => {
   try {
     const form = await DynamicForm.find({_id: req.params.id});
     res.json(form);
