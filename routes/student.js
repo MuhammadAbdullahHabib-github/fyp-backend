@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+const nodemailer = require("nodemailer");
 const { validationResult, check } = require("express-validator");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
@@ -8,11 +9,22 @@ const Student = require("../models/Student.js");
 const auth = require("../middleware/auth.js");
 const Form = require("../models/Form.js");
 
+// Create reusable transporter object using the default SMTP transport for nodemailer
+let transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: "abdullah.mohammad201924@gmail.com",
+    pass: "U2019274@giki.edu.pk",
+  },
+});
+
 // @route   POST api/student
 // @desc    Register a student
 // @access  Public
 
-router.post("/",[
+router.post(
+  "/",
+  [
     // Validations
     check("firstname", "Please enter your firstname").not().isEmpty(),
     check("lastname", "Please enter your lastname").not().isEmpty(),
@@ -52,7 +64,17 @@ router.post("/",[
       if (student) {
         return res.status(400).json({ msg: "Student already exists" });
       }
-      student = new Student({ firstname,lastname,email,password,phoneNumber,regnum,faculty,role,batch});
+      student = new Student({
+        firstname,
+        lastname,
+        email,
+        password,
+        phoneNumber,
+        regnum,
+        faculty,
+        role,
+        batch,
+      });
 
       const salt = await bcrypt.genSalt(10);
       student.password = await bcrypt.hash(password, salt);
@@ -60,11 +82,32 @@ router.post("/",[
       const payload = {
         student: {
           id: student.id,
-        }
+        },
       };
-      jwt.sign( payload,config.get("jwtsecret"), {
+
+      // send email to student
+      let mailOptions = {
+        from: "abdullah.mohammad201924@gmail.com",
+        to: email,
+        subject: "Your registration request has been received by EDAS",
+        text: "Thank you for registering. We have received your registration request and will verify your information. You will receive another email once your account is approved.",
+      };
+
+      transporter.sendMail(mailOptions, (error, info) => {
+        if (error) {
+          console.log(error);
+        } else {
+          console.log("Email sent: " + info.response);
+        }
+      });
+
+      jwt.sign(
+        payload,
+        config.get("jwtsecret"),
+        {
           expiresIn: 360000,
-        },(err, token) => {
+        },
+        (err, token) => {
           if (err) throw err;
           res.json({ success: "true", token });
         }
@@ -78,27 +121,36 @@ router.post("/",[
 
 // --------------------------------------------------------------
 // @route   GET api/student
-// @desc    Get students details 
+// @desc    Get students details
 // @access  Private
 
-router.get("/", auth , async (req, res) => {
-    try {
-      let student = await Student.findById(req.student.id).select('-password');
-      res.send(student);
-    }catch(error){
-        console.error(error.message);
-        res.status(500).send(`Server Error: ${error.message}`);
-    }
+router.get("/", auth, async (req, res) => {
+  try {
+    let student = await Student.findById(req.student.id).select("-password");
+    res.send(student);
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).send(`Server Error: ${error.message}`);
+  }
 });
-
 
 // @route   PUT api/student
 // @desc    Update student details
 // @access  Private
 
 router.put("/", auth, async (req, res) => {
-  
-  const {firstname,lastname,email,password,phoneNumber,regnum,faculty,role,batch,courses} = req.body;
+  const {
+    firstname,
+    lastname,
+    email,
+    password,
+    phoneNumber,
+    regnum,
+    faculty,
+    role,
+    batch,
+    courses,
+  } = req.body;
 
   const studentFields = {};
   if (firstname) studentFields.firstname = firstname;
@@ -133,26 +185,24 @@ router.put("/", auth, async (req, res) => {
   }
 });
 
-
-
-
-
 //--------------------------------------------------------------
 // @route   GET api/student
 // @desc    Get all al form hirarchy noyifications
 // @access  Private
 
-router.get("/tracking", auth , async (req, res) => {
-    try {
-      const form = await Form.find({ student: req.student.id }).sort({ date: -1 }).select("approvers");
-      if (!form) {
-        return res.status(404).json({ msg: "Form not found" });
-      }
-      res.send(form);
-    }catch(error){
-        console.error(error.message);
-        res.status(500).send(`Server Error: ${error.message}`);
+router.get("/tracking", auth, async (req, res) => {
+  try {
+    const form = await Form.find({ student: req.student.id })
+      .sort({ date: -1 })
+      .select("approvers");
+    if (!form) {
+      return res.status(404).json({ msg: "Form not found" });
     }
+    res.send(form);
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).send(`Server Error: ${error.message}`);
+  }
 });
 
 // ---------------------------Student Dashboard Apis---------------------------------
@@ -161,14 +211,14 @@ router.get("/tracking", auth , async (req, res) => {
 // @desc    Get all submitted forms of students
 // @access  Private
 
-router.get("/submittedforms", auth , async (req, res) => {
-    try {
-      const form = await Form.find({ student: req.student.id}).count();
-      res.json({"submittedFormValue": form});
-    }catch(error){
-        console.error(error.message);
-        res.status(500).send(`Server Error: ${error.message}`);
-    }
+router.get("/submittedforms", auth, async (req, res) => {
+  try {
+    const form = await Form.find({ student: req.student.id }).count();
+    res.json({ submittedFormValue: form });
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).send(`Server Error: ${error.message}`);
+  }
 });
 
 // @route   GET api/student/approvedforms
@@ -180,17 +230,16 @@ router.get("/approvedforms", auth, async (req, res) => {
     const studentId = req.student.id;
     const forms = await Form.find({ student: studentId });
 
-    const approvedForms = forms.filter(form => {
-      return form.approvers.every(approver => approver.approved);
+    const approvedForms = forms.filter((form) => {
+      return form.approvers.every((approver) => approver.approved);
     });
 
-    res.json({ "approvedFormCount": approvedForms.length });
+    res.json({ approvedFormCount: approvedForms.length });
   } catch (error) {
     console.error(error.message);
     res.status(500).send(`Server Error: ${error.message}`);
   }
 });
-
 
 // @route   GET api/student/disapprovedforms
 // @desc    Get the count of disapproved forms for a student
@@ -201,18 +250,16 @@ router.get("/disapprovedforms", auth, async (req, res) => {
     const studentId = req.student.id;
     const forms = await Form.find({ student: studentId });
 
-    const disapprovedForms = forms.filter(form => {
-      return form.approvers.some(approver => approver.disapproved);
+    const disapprovedForms = forms.filter((form) => {
+      return form.approvers.some((approver) => approver.disapproved);
     });
 
-    res.json({ "disapprovedFormCount": disapprovedForms.length });
+    res.json({ disapprovedFormCount: disapprovedForms.length });
   } catch (error) {
     console.error(error.message);
     res.status(500).send(`Server Error: ${error.message}`);
   }
 });
-
-
 
 // @route   GET api/student/pendingforms
 // @desc    Get the count of pending forms for a student
@@ -223,7 +270,7 @@ router.get("/pendingforms", auth, async (req, res) => {
     const studentId = req.student.id;
     const forms = await Form.find({ student: studentId });
 
-    const pendingForms = forms.filter(form => {
+    const pendingForms = forms.filter((form) => {
       let isPending = false;
       for (let i = 0; i < form.approvers.length; i++) {
         if (!form.approvers[i].approved) {
@@ -234,13 +281,11 @@ router.get("/pendingforms", auth, async (req, res) => {
       return isPending;
     });
 
-    res.json({ "pendingFormCount": pendingForms.length });
+    res.json({ pendingFormCount: pendingForms.length });
   } catch (error) {
     console.error(error.message);
     res.status(500).send(`Server Error: ${error.message}`);
   }
 });
-
-
 
 module.exports = router;
