@@ -13,8 +13,8 @@ const Form = require("../models/Form.js");
 let transporter = nodemailer.createTransport({
   service: "gmail",
   auth: {
-    user: "abdullah.mohammad201924@gmail.com",
-    pass: "U2019274@giki.edu.pk",
+    user: "abdullah.mohammad2019274@gmail.com",
+    pass: "ewoesymbrpbypxep",
   },
 });
 
@@ -87,7 +87,7 @@ router.post(
 
       // send email to student
       let mailOptions = {
-        from: "abdullah.mohammad201924@gmail.com",
+        from: "abdullah.mohammad2019274@gmail.com",
         to: email,
         subject: "Your registration request has been received by EDAS",
         text: "Thank you for registering. We have received your registration request and will verify your information. You will receive another email once your account is approved.",
