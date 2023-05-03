@@ -89,8 +89,27 @@ router.post(
       let mailOptions = {
         from: "abdullah.mohammad2019274@gmail.com",
         to: email,
-        subject: "Your registration request has been received by EDAS",
-        text: "Thank you for registering. We have received your registration request and will verify your information. You will receive another email once your account is approved.",
+        subject: `${firstname}, your EDAS registration request has been received`,
+        text: `Dear ${firstname},
+
+Thank you for registering at EDAS.
+
+We have received your registration request and will verify your information. You will receive another email once your account is approved.
+
+Best regards,
+The EDAS Team
+`,
+        html: `
+    <div style="font-family: Arial, sans-serif;">
+      <h1 style="font-size: 18px; color: #333;">Dear ${firstname},</h1>
+      <h2 style="font-size: 16px; color: #333;">Thank you for registering at EDAS!</h2>
+      <p style="font-size: 14px; color: #666; text-indent: 30px;">We have received your registration request and will verify your information.</p>
+      <p style="font-size: 14px; color: #666; text-indent: 30px;">You will receive another email once your account is approved.</p>
+      <br>
+      <p style="font-size: 14px; color: #666;">Best regards,</p>
+      <p style="font-size: 14px; color: #666;">The EDAS Team</p>
+    </div>
+  `,
       };
 
       transporter.sendMail(mailOptions, (error, info) => {
