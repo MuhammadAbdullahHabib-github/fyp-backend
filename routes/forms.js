@@ -139,26 +139,26 @@ router.post('/', [auth, upload.single('formDocument'),[
         console.log(approverFaculty);
       }
 
-      // if (approverFaculty) {
-      //   // Send email to the approver
-      //   const mailOptions = {
-      //     from: 'abdullah.mohammad2019274@gmail.com', // Your email address
-      //     to: approverFaculty.email,
-      //     subject: 'New Form Submission',
-      //     text: `Dear ${approverFaculty.firstname} ${approverFaculty.lastname},\n\n` +
-      //           `A new form titled "${formName}" has been submitted by ${student.firstname} ${student.lastname} and requires your approval.\n\n` +
-      //           `Please log in to the system to review and approve or reject the form.\n\n` +
-      //           `Thank you`
-      //   };
+      if (approverFaculty) {
+        // Send email to the approver
+        const mailOptions = {
+          from: 'abdullah.mohammad2019274@gmail.com', // Your email address
+          to: approverFaculty.email,
+          subject: 'New Form Submission',
+          text: `Dear ${approverFaculty.firstname} ${approverFaculty.lastname},\n\n` +
+                `A new form titled "${formName}" has been submitted by ${student.firstname} ${student.lastname} and requires your approval.\n\n` +
+                `Please log in to the system to review and approve or reject the form.\n\n` +
+                `Thank you`
+        };
 
-      //   transporter.sendMail(mailOptions, (error, info) => {
-      //     if (error) {
-      //       console.log(error);
-      //     } else {
-      //       console.log('Email sent: ' + info.response);
-      //     }
-      //   });
-      // }
+        transporter.sendMail(mailOptions, (error, info) => {
+          if (error) {
+            console.log(error);
+          } else {
+            console.log('Email sent: ' + info.response);
+          }
+        });
+      }
     }
 
   } catch (error) {
