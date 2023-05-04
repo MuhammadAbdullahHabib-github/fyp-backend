@@ -242,12 +242,13 @@ router.get("/studentForms", auth, async (req, res) => {
       });
     }
 
-    res.json(matchedForms);
+    res.json(matchedForms[faculty.externalRoles[0].role]);
   } catch (error) {
     console.error(error.message);
     res.status(500).send(`Server Error: ${error.message}`);
   }
 });
+
 
 
 // router.get('/studentForms', auth, async (req, res) => {
