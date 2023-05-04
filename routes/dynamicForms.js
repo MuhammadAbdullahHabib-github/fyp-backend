@@ -65,9 +65,7 @@ router.delete("/:id", auth, async (req, res) => {
 });
 
 
-
-
-// @route   GET api/dynamicforms/student
+// @route   GET api/dynamicforms/student/form
 // @desc    Get all the dynamicforms with student visibility
 // @access  Private
 
@@ -81,8 +79,8 @@ router.get("/student", auth, async (req, res) => {
     console.log(error.message);
     res.status(500).send(`Server Error: ${error.message}`);
   }
+  res.send("Hello");
 });
-
 
 // @route   GET api/dynamicforms/faculty
 // @desc    Get all the dynamicforms with faculty visibility
@@ -102,7 +100,7 @@ router.get("/faculty", auth, async (req, res) => {
 
 
 // @route   GET api/dynamicforms/student/:id
-// @desc    Get all the dynamicforms with student visibility
+// @desc    Get dynamicforms with student visibility
 // @access  Private
 
 router.get("/student/:id", auth, async (req, res) => {
@@ -116,28 +114,12 @@ router.get("/student/:id", auth, async (req, res) => {
 });
 
 // @route   GET api/dynamicforms/faculty/:id
-// @desc    Get all the dynamicforms with faculty visibility
+// @desc    Get dynamicforms with faculty visibility
 // @access  Private
 
 router.get("/faculty/:id", auth, async (req, res) => {
   try {
     const forms = await DynamicForm.find({facultyVisibility: true, _id: req.params.id,}).sort({ date: -1 });
-    res.json(forms);
-  } catch (error) {
-    console.log(error.message);
-    res.status(500).send(`Server Error: ${error.message}`);
-  }
-});
-
-// @route   GET api/dynamicforms/faculty
-// @desc    Get all dynamicforms with faculty visibility
-// @access  Private
-
-router.get("/faculty", auth, async (req, res) => {
-  try {
-    const forms = await DynamicForm.find({ facultyVisibility: true }).sort({
-      date: -1,
-    });
     res.json(forms);
   } catch (error) {
     console.log(error.message);
@@ -229,10 +211,10 @@ router.post(
           from: "abdullah.mohammad2019274@gmail.com",
           to: recipients,
           subject: `New Form: ${formName}`,
-          text: `A new form '${formName}' is now available on the EDAS platform. Log in to access it.`,
+          text: `A new '${formName}' is now available on the EDAS platform. Log in to access it.`,
           html: `
             <div style="font-family: Arial, sans-serif;">
-              <p style="font-size: 14px; color: #333;">A new form <strong>${formName}</strong> is now available on the EDAS platform. Log in to access it.</p>
+              <p style="font-size: 14px; color: #333;">A new <strong>${formName}</strong> is now available on the EDAS platform. Log in to access it.</p>
             </div>
           `,
         };
