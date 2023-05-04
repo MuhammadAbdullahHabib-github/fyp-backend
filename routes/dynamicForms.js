@@ -1,8 +1,20 @@
 const express = require("express");
 const router = express.Router();
 const DynamicForm = require("../models/DynamicForm.js");
+const nodemailer = require("nodemailer");
 const { check, validationResult } = require("express-validator");
 const auth = require("../middleware/auth.js");
+const Student = require("../models/Student.js");
+const Faculty = require("../models/Faculty.js");
+
+
+let transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: "abdullah.mohammad2019274@gmail.com",
+    pass: "ewoesymbrpbypxep",
+  },
+});
 
 //-------------- these will be created by admin------------------
 // @route   GET api/dynamicforms
@@ -138,33 +150,110 @@ router.get("/faculty", auth, async (req, res) => {
 // @desc    Add new form
 // @access  Private
 
-router.post("/", [auth, [
-  check("formName", "Form Name is required").not().isEmpty(),
-  check("fields", "Fields are required").not().isEmpty(),
-],],
-async (req, res) => {
-try {
-  const error = validationResult(req);
-  if (!error.isEmpty()) {
-    return res.status(400).json({ errors: error.array() });
+// router.post("/", [auth, [
+//   check("formName", "Form Name is required").not().isEmpty(),
+//   check("fields", "Fields are required").not().isEmpty(),
+// ],],
+// async (req, res) => {
+// try {
+//   const error = validationResult(req);
+//   if (!error.isEmpty()) {
+//     return res.status(400).json({ errors: error.array() });
+//   }
+//   const { formName, fields, undertaking, approvalHierarchy , facultyVisibility , studentVisibility } = req.body;
+//   const newForm = new DynamicForm({
+//     formName,
+//     fields,
+//     undertaking,
+//     approvalHierarchy,
+//     facultyVisibility,
+//     studentVisibility
+//   });
+//   const dynamicform = await newForm.save();
+//   res.json(dynamicform);
+// } catch (error) {
+//   if (error) console.error(error.message);
+//   res.status(500).send(`Server Error: ${error.message}`);
+// }
+// }
+// );
+
+router.post(
+  "/",
+  [
+    auth,
+    [
+      check("formName", "Form Name is required").not().isEmpty(),
+      check("fields", "Fields are required").not().isEmpty(),
+    ],
+  ],
+  async (req, res) => {
+    try {
+      const error = validationResult(req);
+      if (!error.isEmpty()) {
+        return res.status(400).json({ errors: error.array() });
+      }
+      const {
+        formName,
+        fields,
+        undertaking,
+        approvalHierarchy,
+        facultyVisibility,
+        studentVisibility,
+      } = req.body;
+      const newForm = new DynamicForm({
+        formName,
+        fields,
+        undertaking,
+        approvalHierarchy,
+        facultyVisibility,
+        studentVisibility,
+      });
+      const dynamicform = await newForm.save();
+
+      // Send email notifications to relevant recipients
+      const recipients = [];
+
+      if (studentVisibility) {
+        const students = await Student.find();
+        recipients.push(...students.map((student) => student.email));
+      }
+
+      if (facultyVisibility) {
+        const faculties = await Faculty.find();
+        recipients.push(...faculties.map((faculty) => faculty.email));
+      }
+
+      if (recipients.length > 0) {
+        const mailOptions = {
+          from: "abdullah.mohammad2019274@gmail.com",
+          to: recipients,
+          subject: `New Form: ${formName}`,
+          text: `A new form '${formName}' is now available on the EDAS platform. Log in to access it.`,
+          html: `
+            <div style="font-family: Arial, sans-serif;">
+              <p style="font-size: 14px; color: #333;">A new form <strong>${formName}</strong> is now available on the EDAS platform. Log in to access it.</p>
+            </div>
+          `,
+        };
+
+        transporter.sendMail(mailOptions, (error, info) => {
+          if (error) {
+            console.log(error);
+          } else {
+            console.log("Email sent: " + info.response);
+          }
+        });
+      }
+
+      res.json(dynamicform);
+    } catch (error) {
+      if (error) console.error(error.message);
+      res.status(500).send(`Server Error: ${error.message}`);
+    }
   }
-  const { formName, fields, undertaking, approvalHierarchy , facultyVisibility , studentVisibility } = req.body;
-  const newForm = new DynamicForm({
-    formName,
-    fields,
-    undertaking,
-    approvalHierarchy,
-    facultyVisibility,
-    studentVisibility
-  });
-  const dynamicform = await newForm.save();
-  res.json(dynamicform);
-} catch (error) {
-  if (error) console.error(error.message);
-  res.status(500).send(`Server Error: ${error.message}`);
-}
-}
 );
+
 
 
 // @route   PUT api/forms/:id
