@@ -209,7 +209,7 @@ router.put("/", auth, async (req, res) => {
 
 //--------------------------------------------------------------
 // @route   GET api/student
-// @desc    Get all al form hirarchy noyifications
+// @desc    Get all form hirarchy noyifications
 // @access  Private
 
 router.get("/tracking", auth, async (req, res) => {

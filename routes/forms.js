@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const nodemailer = require('nodemailer');
 const { check, validationResult } = require('express-validator');
 const multer = require('multer');
 const path = require('path');
@@ -9,6 +10,17 @@ const auth = require('../middleware/auth');
 const Student = require('../models/Student');
 const Form = require('../models/Form');
 const Faculty = require('../models/Faculty');
+
+
+// Set up your email transporter
+const transporter = nodemailer.createTransport({
+  service: 'gmail', // Use the email service of your choice
+  auth: {
+    user: 'youremail@gmail.com',
+    pass: 'yourpassword'
+  }
+});
+
 
 //-----------------------------------------------------------------------------------------//-
 const storage = multer.diskStorage({                                                       //- 
@@ -60,6 +72,34 @@ router.get('/faculty', auth , async (req, res) => {
 // @access  Private
 // 'formDocument' is the name of the file input field in the form
 
+// router.post('/', [auth, upload.single('formDocument'),[
+//   check('formName', 'Form Name is required').not().isEmpty(),
+// ]], async (req, res) => {
+//   const errors = validationResult(req);
+//   if (!errors.isEmpty()) {
+//     return res.status(400).json({ errors: errors.array() });
+//   }
+//   const { formName, responces, approvalHierarchy, faculty } = req.body;
+//   try {
+//     const student = await Student.findOne({ _id:req.student.id});
+//     const approvers = Form.createApprovers(approvalHierarchy);
+//     const form = new Form({
+//       student: req.student.id,
+//       formName,
+//       faculty,
+//       responces,
+//       approvers
+//     });
+//     const submittedForm = await form.save();
+//     res.json(submittedForm);
+//   } catch (error) {
+//     console.error(error.message);
+//     res.status(500).send(`Server Error: ${error.message}`);
+//   }
+// });
+
+
+
 router.post('/', [auth, upload.single('formDocument'),[
   check('formName', 'Form Name is required').not().isEmpty(),
 ]], async (req, res) => {
@@ -80,11 +120,53 @@ router.post('/', [auth, upload.single('formDocument'),[
     });
     const submittedForm = await form.save();
     res.json(submittedForm);
+
+    // Iterate through the approval hierarchy
+    for (const role of approvalHierarchy) {
+      let approverFaculty;
+      if (role === 'advisor') {
+        approverFaculty = await Faculty.findOne({
+          'externalRoles.role': role,
+          department: student.faculty,
+          'externalRoles.batch': student.batch
+        });
+        console.log(approverFaculty);
+      } else if (role === 'dean') {
+        approverFaculty = await Faculty.findOne({
+          'externalRoles.role': role,
+          department: student.faculty
+        });
+        console.log(approverFaculty);
+      }
+
+      // if (approverFaculty) {
+      //   // Send email to the approver
+      //   const mailOptions = {
+      //     from: 'abdullah.mohammad2019274@gmail.com', // Your email address
+      //     to: approverFaculty.email,
+      //     subject: 'New Form Submission',
+      //     text: `Dear ${approverFaculty.firstname} ${approverFaculty.lastname},\n\n` +
+      //           `A new form titled "${formName}" has been submitted by ${student.firstname} ${student.lastname} and requires your approval.\n\n` +
+      //           `Please log in to the system to review and approve or reject the form.\n\n` +
+      //           `Thank you`
+      //   };
+
+      //   transporter.sendMail(mailOptions, (error, info) => {
+      //     if (error) {
+      //       console.log(error);
+      //     } else {
+      //       console.log('Email sent: ' + info.response);
+      //     }
+      //   });
+      // }
+    }
+
   } catch (error) {
     console.error(error.message);
     res.status(500).send(`Server Error: ${error.message}`);
   }
 });
+
 
 
 // @route   POST api/forms/faculty

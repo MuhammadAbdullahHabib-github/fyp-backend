@@ -132,34 +132,6 @@ router.delete("/:id", auth, async (req, res) => {
 // @desc    Add new form
 // @access  Private
 
-// router.post("/", [auth, [
-//   check("formName", "Form Name is required").not().isEmpty(),
-//   check("fields", "Fields are required").not().isEmpty(),
-// ],],
-// async (req, res) => {
-// try {
-//   const error = validationResult(req);
-//   if (!error.isEmpty()) {
-//     return res.status(400).json({ errors: error.array() });
-//   }
-//   const { formName, fields, undertaking, approvalHierarchy , facultyVisibility , studentVisibility } = req.body;
-//   const newForm = new DynamicForm({
-//     formName,
-//     fields,
-//     undertaking,
-//     approvalHierarchy,
-//     facultyVisibility,
-//     studentVisibility
-//   });
-//   const dynamicform = await newForm.save();
-//   res.json(dynamicform);
-// } catch (error) {
-//   if (error) console.error(error.message);
-//   res.status(500).send(`Server Error: ${error.message}`);
-// }
-// }
-// );
-
 router.post(
   "/",
   [
