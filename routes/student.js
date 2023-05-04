@@ -66,8 +66,8 @@ router.post(
       if (student) {
         return res.status(400).json({ msg: "Email already registered by student or faculty." });
       }
-      let faculty = await Faculty.findOne({ email });
-      if (faculty) {
+      let foundFaculty = await Faculty.findOne({ email });
+      if (foundFaculty) {
         return res.status(400).json({ msg: "Email already registered by student or faculty." });
       }
 

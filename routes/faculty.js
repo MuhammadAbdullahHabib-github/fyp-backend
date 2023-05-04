@@ -251,51 +251,6 @@ router.get("/studentForms", auth, async (req, res) => {
 
 
 
-// router.get('/studentForms', auth, async (req, res) => {
-//   try {
-//     const faculty = await Faculty.findById(req.faculty.id);
-//     if (!faculty) {
-//       return res.status(404).json({ msg: "Faculty not found" });
-//     }
-//     const externalRole = faculty.externalRoles[0].role;
-//     const numberOfApprovals = faculty.externalRoles.length;
-//     const matchedForms = {
-//       advisor: [],
-//       dean: [],
-//     };
-
-//     for (let i = 0; i < numberOfApprovals; i++) {
-//       const role = faculty.externalRoles[i].role;
-//       if (role === 'advisor' || role === 'dean') {
-//         const forms = await Form.find({ 'approvers.role': role, 'faculty': faculty.externalRoles[i].externalfaculty }).populate('student');
-//         forms.forEach((form) => {
-//           const approverIndex = form.approvers.findIndex(approver => approver.role === role);
-          
-//           if (approverIndex > 0 && !form.approvers[approverIndex - 1].approved) {
-//             // Skip the form if the previous approver hasn't approved it yet
-//             return;
-//           }
-
-//           if (role === 'advisor') {
-//             // Filter forms where the advisor's batch matches the student's batch
-//             if (form.student.batch == faculty.externalRoles[i].batch) {
-//               matchedForms.advisor.push(form);
-//             }
-//           } else if (role === 'dean') {
-//             if(form.student.faculty === faculty.department ){
-//               matchedForms.dean.push(form);
-//             }
-//           }
-//         });
-//       }
-//     }
-
-//     res.json(matchedForms[externalRole]);
-//   } catch (error) {
-//     console.error(error.message);
-//     res.status(500).send(`Server Error: ${error.message}`);
-//   }
-// });
 
 //--------------------------------------------Approval Function--------------------------------------------------------------
 const sendApprovalEmail = async (studentEmail, formName, studentName, approverRole) => {
@@ -329,7 +284,8 @@ router.put("/studentForms/:id", auth, async (req, res) => {
       return res.status(404).json({ msg: "Faculty not found" });
     }
 
-    const formId = req.params.id;
+    // const formId = req.params.id;
+    const formId = req.params.id.trim();
     const form = await Form.findById(formId);
     if (!form) {
       return res.status(404).json({ msg: "Form not found" });
@@ -394,68 +350,11 @@ router.put("/studentForms/:id", auth, async (req, res) => {
 });
 
 
-
-// router.put('/studentForms/:id', auth, async (req, res) => {
-//   try {
-//     const faculty = await Faculty.findById(req.faculty.id);
-//     if (!faculty) {
-//       return res.status(404).json({ msg: "Faculty not found" });
-//     }
-    
-//       const formId = req.params.id;
-//       const form = await Form.findById(formId);
-//         if (!form) {
-//           return res.status(404).json({ msg: "Form not found" });
-//         }
-//          // Fetch the student object using form.student
-//         const student = await Student.findById(form.student);
-//         let approverOrder = null;
-    
-//         faculty.externalRoles.forEach(externalRole => {
-//           if (externalRole.role === 'advisor') {
-//             approverOrder = 1;
-//           } else if (externalRole.role === 'dean') {
-//             approverOrder = 2;
-//           }
-//         });
-    
-//         if (!approverOrder) {
-//           return res.status(401).json({ msg: "Unauthorized to update this form" });
-//         }
-    
-//         const approverIndex = form.approvers.findIndex(approver => approver.order === approverOrder);
-    
-//         if (approverIndex === -1) {
-//           return res.status(401).json({ msg: "Unauthorized to update this form" });
-//         }
-    
-//         // Check if the previous approver has approved the form
-//         if (approverIndex > 0 && !form.approvers[approverIndex - 1].approved) {
-//           return res.status(403).json({ msg: "Previous approver must approve before you can approve the form" });
-//         }
-    
-//         const approver = form.approvers[approverIndex];
-    
-//         if (!approver.approved) {
-//           form.approvers[approverIndex].approved = true;
-//           await form.save();
-//           res.json({ msg: `Approval updated for ${approver.role}` });
-        
-//           await sendApprovalEmail(student.email, form.formName, `${student.firstname} ${student.lastname}`, approver.role);
-        
-//         } else {
-//           res.status(400).json({ msg: "Form already approved" });
-//         }
-//   } catch (error) {
-//     console.error(error.message);
-//     res.status(500).send(`Server Error: ${error.message}`);
-//   }
-// });
 //--------------------------------------------Disapproval Function--------------------------------------------------------------
 
 const sendDisapprovalEmail = async (studentEmail, formName, studentName, approverRole) => {
   const mailOptions = {
-    from: 'your-email@example.com', // Your email address
+    from: 'abdullah.mohammad2019274@gmail.com', // Your email address
     to: studentEmail,
     subject: 'Form Disapproval Update',
     text: `Dear ${studentName},\n\n` +
@@ -485,7 +384,8 @@ router.put("/studentForms/disapprove/:id", auth, async (req, res) => {
       return res.status(404).json({ msg: "Faculty not found" });
     }
 
-    const formId = req.params.id;
+    // const formId = req.params.id;
+    const formId = req.params.id.trim();
     const form = await Form.findById(formId);
     if (!form) {
       return res.status(404).json({ msg: "Form not found" });
@@ -542,58 +442,6 @@ router.put("/studentForms/disapprove/:id", auth, async (req, res) => {
   }
 });
 
-
-
-// router.put('/studentForms/disapprove/:id', auth, async (req, res) => {
-//   try {
-//     const faculty = await Faculty.findById(req.faculty.id);
-//     if (!faculty) {
-//       return res.status(404).json({ msg: "Faculty not found" });
-//     }
-
-//     const formId = req.params.id;
-//     const form = await Form.findById(formId);
-//     if (!form) {
-//       return res.status(404).json({ msg: "Form not found" });
-//     }
-
-//     let approverOrder = null;
-
-//     faculty.externalRoles.forEach(externalRole => {
-//       if (externalRole.role === 'advisor') {
-//         approverOrder = 1;
-//       } else if (externalRole.role === 'dean') {
-//         approverOrder = 2;
-//       }
-//     });
-
-//     if (!approverOrder) {
-//       return res.status(401).json({ msg: "Unauthorized to update this form" });
-//     }
-
-//     const approverIndex = form.approvers.findIndex(approver => approver.order === approverOrder);
-
-//     if (approverIndex === -1) {
-//       return res.status(401).json({ msg: "Unauthorized to update this form" });
-//     }
-
-//     const approver = form.approvers[approverIndex];
-
-//     if (!approver.disapproved) {
-//       form.approvers[approverIndex].disapproved = true;
-//       form.approvers[approverIndex].approved = false; // Make sure the form is marked as not approved
-//       await form.save();
-//       res.json({ msg: `Disapproval updated for ${approver.role}` });
-
-      
-//     } else {
-//       res.status(400).json({ msg: "Form already disapproved" });
-//     }
-//   } catch (error) {
-//     console.error(error.message);
-//     res.status(500).send(`Server Error: ${error.message}`);
-//   }
-// });
 
 // ---------------------------Faculty Dashboard Apis---------------------------------
 
@@ -686,11 +534,164 @@ try {
 
 module.exports = router;
 
+// router.get('/studentForms', auth, async (req, res) => {
+//   try {
+//     const faculty = await Faculty.findById(req.faculty.id);
+//     if (!faculty) {
+//       return res.status(404).json({ msg: "Faculty not found" });
+//     }
+//     const externalRole = faculty.externalRoles[0].role;
+//     const numberOfApprovals = faculty.externalRoles.length;
+//     const matchedForms = {
+//       advisor: [],
+//       dean: [],
+//     };
+
+//     for (let i = 0; i < numberOfApprovals; i++) {
+//       const role = faculty.externalRoles[i].role;
+//       if (role === 'advisor' || role === 'dean') {
+//         const forms = await Form.find({ 'approvers.role': role, 'faculty': faculty.externalRoles[i].externalfaculty }).populate('student');
+//         forms.forEach((form) => {
+//           const approverIndex = form.approvers.findIndex(approver => approver.role === role);
+          
+//           if (approverIndex > 0 && !form.approvers[approverIndex - 1].approved) {
+//             // Skip the form if the previous approver hasn't approved it yet
+//             return;
+//           }
+
+//           if (role === 'advisor') {
+//             // Filter forms where the advisor's batch matches the student's batch
+//             if (form.student.batch == faculty.externalRoles[i].batch) {
+//               matchedForms.advisor.push(form);
+//             }
+//           } else if (role === 'dean') {
+//             if(form.student.faculty === faculty.department ){
+//               matchedForms.dean.push(form);
+//             }
+//           }
+//         });
+//       }
+//     }
+
+//     res.json(matchedForms[externalRole]);
+//   } catch (error) {
+//     console.error(error.message);
+//     res.status(500).send(`Server Error: ${error.message}`);
+//   }
+// });
 
 
 
 
+// router.put('/studentForms/:id', auth, async (req, res) => {
+//   try {
+//     const faculty = await Faculty.findById(req.faculty.id);
+//     if (!faculty) {
+//       return res.status(404).json({ msg: "Faculty not found" });
+//     }
+    
+//       const formId = req.params.id;
+//       const form = await Form.findById(formId);
+//         if (!form) {
+//           return res.status(404).json({ msg: "Form not found" });
+//         }
+//          // Fetch the student object using form.student
+//         const student = await Student.findById(form.student);
+//         let approverOrder = null;
+    
+//         faculty.externalRoles.forEach(externalRole => {
+//           if (externalRole.role === 'advisor') {
+//             approverOrder = 1;
+//           } else if (externalRole.role === 'dean') {
+//             approverOrder = 2;
+//           }
+//         });
+    
+//         if (!approverOrder) {
+//           return res.status(401).json({ msg: "Unauthorized to update this form" });
+//         }
+    
+//         const approverIndex = form.approvers.findIndex(approver => approver.order === approverOrder);
+    
+//         if (approverIndex === -1) {
+//           return res.status(401).json({ msg: "Unauthorized to update this form" });
+//         }
+    
+//         // Check if the previous approver has approved the form
+//         if (approverIndex > 0 && !form.approvers[approverIndex - 1].approved) {
+//           return res.status(403).json({ msg: "Previous approver must approve before you can approve the form" });
+//         }
+    
+//         const approver = form.approvers[approverIndex];
+    
+//         if (!approver.approved) {
+//           form.approvers[approverIndex].approved = true;
+//           await form.save();
+//           res.json({ msg: `Approval updated for ${approver.role}` });
+        
+//           await sendApprovalEmail(student.email, form.formName, `${student.firstname} ${student.lastname}`, approver.role);
+        
+//         } else {
+//           res.status(400).json({ msg: "Form already approved" });
+//         }
+//   } catch (error) {
+//     console.error(error.message);
+//     res.status(500).send(`Server Error: ${error.message}`);
+//   }
+// });
 
+
+
+// router.put('/studentForms/disapprove/:id', auth, async (req, res) => {
+//   try {
+//     const faculty = await Faculty.findById(req.faculty.id);
+//     if (!faculty) {
+//       return res.status(404).json({ msg: "Faculty not found" });
+//     }
+
+//     const formId = req.params.id;
+//     const form = await Form.findById(formId);
+//     if (!form) {
+//       return res.status(404).json({ msg: "Form not found" });
+//     }
+
+//     let approverOrder = null;
+
+//     faculty.externalRoles.forEach(externalRole => {
+//       if (externalRole.role === 'advisor') {
+//         approverOrder = 1;
+//       } else if (externalRole.role === 'dean') {
+//         approverOrder = 2;
+//       }
+//     });
+
+//     if (!approverOrder) {
+//       return res.status(401).json({ msg: "Unauthorized to update this form" });
+//     }
+
+//     const approverIndex = form.approvers.findIndex(approver => approver.order === approverOrder);
+
+//     if (approverIndex === -1) {
+//       return res.status(401).json({ msg: "Unauthorized to update this form" });
+//     }
+
+//     const approver = form.approvers[approverIndex];
+
+//     if (!approver.disapproved) {
+//       form.approvers[approverIndex].disapproved = true;
+//       form.approvers[approverIndex].approved = false; // Make sure the form is marked as not approved
+//       await form.save();
+//       res.json({ msg: `Disapproval updated for ${approver.role}` });
+
+      
+//     } else {
+//       res.status(400).json({ msg: "Form already disapproved" });
+//     }
+//   } catch (error) {
+//     console.error(error.message);
+//     res.status(500).send(`Server Error: ${error.message}`);
+//   }
+// });
 
 
 
