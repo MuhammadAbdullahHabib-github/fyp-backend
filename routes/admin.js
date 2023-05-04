@@ -257,6 +257,65 @@ router.delete("/student/:id", auth, async (req, res) => {
   }
 });
 
+// @route   Delete /api/admin/student/faculty/:id ----- applied at client side
+// @desc    Delete the faculty by id
+// @access  Private
+
+router.delete("/student/remove/:id", auth, async (req, res) => {
+  try {
+    const student = await Student.findById(req.params.id);
+    if (!student) {
+      return res.status(404).json({ msg: `Student with id ${id} not found` });
+    }
+
+    const mailOptions = {
+      from: "abdullah.mohammad2019274@gmail.com",
+      to: student.email,
+      subject: `EDAS Account Deletion - ${student.firstname} ${student.lastname}`,
+      text: `Dear ${student.firstname} ${student.lastname},
+      
+            We regret to inform you that your EDAS account has been deleted by the administration due to violation of our terms of service. This decision was made after a thorough review of your account and activity on the platform.
+            
+            Please note that any data or content associated with your account has also been removed from our servers. 
+            
+            If you have any questions or concerns, please contact our support team.
+            
+            Best regards,
+            The EDAS Team
+            `,
+      html: `
+            <div style="font-family: Arial, sans-serif;">
+              <h1 style="font-size: 18px; color: #333;">Dear ${student.firstname} ${student.lastname},</h1>
+              <h2 style="font-size: 16px; color: #333;">EDAS Account Deletion</h2>
+              <p style="font-size: 14px; color: #666; text-indent: 30px;">We regret to inform you that your EDAS account has been deleted by the administration due to violation of our terms of service. This decision was made after a thorough review of your account and activity on the platform.</p>
+              <p style="font-size: 14px; color: #666; text-indent: 30px;">Please note that any data or content associated with your account has also been removed from our servers.</p>
+              <p style="font-size: 14px; color: #666;">If you have any questions or concerns, please contact our support team.</p>
+              <br>
+              <p style="font-size: 14px; color: #666;">Best regards,</p>
+              <p style="font-size: 14px; color: #666;">The EDAS Team</p>
+            </div>
+            `
+    };
+
+    transporter.sendMail(mailOptions, (error, info) => {
+      if (error) {
+        console.log(error);
+      } else {
+        console.log("Email sent: " + info.response);
+      }
+    });
+
+    await Student.findByIdAndRemove(req.params.id);
+    res.json({ msg: `Student removed.` });
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).send(`Server Error: ${error.message}`);
+  }
+});
+
+
+
+
 //-----------------Admin geting data of single student ----------
 
 // @route   GET api/admin/student/:id
@@ -462,7 +521,7 @@ router.get("/faculty/approve", auth, async (req, res) => {
 // @route   PUT /api/admin/student/:id ----- applied at client side
 // @desc    Update the student by id
 // @access  Private
-//{ "accept":false || true } send this in body
+//{ "accept": true } send this in body
 
 router.put("/faculty/approval/:id", async (req, res) => {
   const { accept } = req.body;
@@ -478,6 +537,46 @@ router.put("/faculty/approval/:id", async (req, res) => {
       { $set: facultyFields },
       { new: true }
     );
+
+    // If the faculty's account is approved, send an email
+    if (accept) {
+      let mailOptions = {
+        from: "abdullah.mohammad2019274@gmail.com",
+        to: faculty.email,
+        subject: `EDAS Registration Approved - ${faculty.firstname} ${faculty.lastname}`,
+        text: `Dear ${faculty.firstname} ${faculty.lastname},
+          
+          We are pleased to inform you that your registration request for the EDAS platform has been approved by the administration. You can now log in to your account using your registered email address and password to access all the features and services provided by EDAS.
+          
+          If you encounter any issues or have any questions, please do not hesitate to contact our support team.
+          
+          We look forward to your active participation in our academic community.
+          
+          Best regards,
+          The EDAS Team
+          `,
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto;">
+            <h1 style="font-size: 18px; color: #333;">Dear ${faculty.firstname} ${faculty.lastname},</h1>
+            <h2 style="font-size: 16px; color: #333;">Your EDAS Registration has been Approved!</h2>
+            <p style="font-size: 14px; color: #666; line-height: 1.5;">We are pleased to inform you that your registration request for the EDAS platform has been approved by the administration. You can now log in to your account using your registered email address and password to access all the features and services provided by EDAS.</p>
+            <p style="font-size: 14px; color: #666; line-height: 1.5;">If you encounter any issues or have any questions, please do not hesitate to contact our support team.</p>
+            <p style="font-size: 14px; color: #666; line-height: 1.5;">We look forward to your active participation in our academic community.</p>
+            <br>
+            <p style="font-size: 14px; color: #666;">Best regards,</p>
+            <p style="font-size: 14px; color: #666;">The EDAS Team</p>
+          </div>
+        `,
+      };
+
+      transporter.sendMail(mailOptions, (error, info) => {
+        if (error) {
+          console.log(error);
+        } else {
+          console.log("Email sent: " + info.response);
+        }
+      });
+    }
 
     res.json(result);
   } catch (error) {
@@ -537,6 +636,16 @@ router.delete("/faculty/:id", auth, async (req, res) => {
             </div>
             `
       };
+
+      transporter.sendMail(mailOptions, (error, info) => {
+        if (error) {
+          console.log(error);
+        } else {
+          console.log("Email sent: " + info.response);
+        }
+      });
+
+
     await Faculty.findByIdAndRemove(req.params.id);
     res.json({ msg: `Faculty removed.` });
   } catch (error) {
@@ -544,6 +653,64 @@ router.delete("/faculty/:id", auth, async (req, res) => {
     res.status(500).send(`Server Error: ${error.message}`);
   }
 });
+
+
+// @route   Delete /api/admin/remove/faculty/:id ----- applied at client side
+// @desc    Delete the faculty by id
+// @access  Private
+
+router.delete("/faculty/remove/:id", auth, async (req, res) => {
+  try {
+    const faculty = await Faculty.findById(req.params.id);
+    if (!faculty) {
+      return res.status(404).json({ msg: `Faculty with id ${id} not found` });
+    }
+
+    const mailOptions = {
+      from: "abdullah.mohammad2019274@gmail.com",
+      to: faculty.email,
+      subject: `EDAS Account Deletion - ${faculty.firstname} ${faculty.lastname}`,
+      text: `Dear ${faculty.firstname} ${faculty.lastname},
+      
+            We regret to inform you that your EDAS account has been deleted by the administration due to violation of our terms of service. This decision was made after a thorough review of your account and activity on the platform.
+            
+            Please note that any data or content associated with your account has also been removed from our servers. 
+            
+            If you have any questions or concerns, please contact our support team.
+            
+            Best regards,
+            The EDAS Team
+            `,
+      html: `
+            <div style="font-family: Arial, sans-serif;">
+              <h1 style="font-size: 18px; color: #333;">Dear ${faculty.firstname} ${faculty.lastname},</h1>
+              <h2 style="font-size: 16px; color: #333;">EDAS Account Deletion</h2>
+              <p style="font-size: 14px; color: #666; text-indent: 30px;">We regret to inform you that your EDAS account has been deleted by the administration due to violation of our terms of service. This decision was made after a thorough review of your account and activity on the platform.</p>
+              <p style="font-size: 14px; color: #666; text-indent: 30px;">Please note that any data or content associated with your account has also been removed from our servers.</p>
+              <p style="font-size: 14px; color: #666;">If you have any questions or concerns, please contact our support team.</p>
+              <br>
+              <p style="font-size: 14px; color: #666;">Best regards,</p>
+              <p style="font-size: 14px; color: #666;">The EDAS Team</p>
+            </div>
+            `
+    };
+
+    transporter.sendMail(mailOptions, (error, info) => {
+      if (error) {
+        console.log(error);
+      } else {
+        console.log("Email sent: " + info.response);
+      }
+    });
+
+    await Faculty.findByIdAndRemove(req.params.id);
+    res.json({ msg: `Faculty removed.` });
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).send(`Server Error: ${error.message}`);
+  }
+});
+
 
 // -----------------Admin adding cources in courses list and geeting them -----------
 // @route   POST api/admin/course
