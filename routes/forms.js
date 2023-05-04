@@ -144,11 +144,14 @@ router.post('/', [auth, upload.single('formDocument'),[
           to: approverFaculty.email,
           subject: 'New Form Submission',
           text: `Dear ${approverFaculty.firstname} ${approverFaculty.lastname},\n\n` +
-                `A new form titled "${formName}" has been submitted by ${student.firstname} ${student.lastname} and requires your approval.\n\n` +
+                `A new form titled "${formName}" has been submitted by ${student.firstname} ${student.lastname} (Faculty: ${student.faculty}, Batch: ${student.batch}) and requires your approval.\n\n` +
+                `Please find the details below:\n\n` +
+                `Student Name: ${student.firstname} ${student.lastname}\n` +
+                `Faculty: ${student.faculty}\n` +
+                `Batch: ${student.batch}\n\n` +
                 `Please log in to the system to review and approve or reject the form.\n\n` +
                 `Thank you`
         };
-
         transporter.sendMail(mailOptions, (error, info) => {
           if (error) {
             console.log(error);
@@ -164,8 +167,6 @@ router.post('/', [auth, upload.single('formDocument'),[
     res.status(500).send(`Server Error: ${error.message}`);
   }
 });
-
-
 
 // @route   POST api/forms/faculty
 // @desc    Add new form for faculty
