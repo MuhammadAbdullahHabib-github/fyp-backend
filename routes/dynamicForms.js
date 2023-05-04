@@ -31,40 +31,6 @@ router.get("/", auth, async (req, res) => {
   }
 });
 
-// @route   GET api/dynamicforms/:id
-// @desc    Get dynamicforms by id
-// @access  Private
-
-router.get("/:id", auth, async (req, res) => {
-  try {
-    const form = await DynamicForm.find({_id: req.params.id});
-    res.json(form);
-  } catch (error) {
-    if (error) console.log(error.message);
-    res.status(500).send(`Server Error: ${error.message}`);
-  }
-});
-
-// @route   DELETE api/dynamicforms/:id
-// @desc    delete dynamicforms by id
-// @access  Private
-
-router.delete("/:id", auth, async (req, res) => {
-  try {
-    const form = await DynamicForm.findOne({ _id: req.params.id });
-    if (!form) {
-      return res.status(404).json({ msg: "DynamicForm not found" });
-    }
-
-    await form.deleteOne();
-    res.json({ msg: "DynamicForm deleted successfully" });
-  } catch (error) {
-    console.error(error.message);
-    res.status(500).send(`Server Error: ${error.message}`);
-  }
-});
-
-
 // @route   GET api/dynamicforms/student/form
 // @desc    Get all the dynamicforms with student visibility
 // @access  Private
@@ -79,7 +45,6 @@ router.get("/student", auth, async (req, res) => {
     console.log(error.message);
     res.status(500).send(`Server Error: ${error.message}`);
   }
-  res.send("Hello");
 });
 
 // @route   GET api/dynamicforms/faculty
@@ -123,6 +88,41 @@ router.get("/faculty/:id", auth, async (req, res) => {
     res.json(forms);
   } catch (error) {
     console.log(error.message);
+    res.status(500).send(`Server Error: ${error.message}`);
+  }
+});
+
+
+// @route   GET api/dynamicforms/:id
+// @desc    Get dynamicforms by id
+// @access  Private
+
+router.get("/:id", auth, async (req, res) => {
+  try {
+    const form = await DynamicForm.find({_id: req.params.id});
+    res.json(form);
+  } catch (error) {
+    if (error) console.log(error.message);
+    res.status(500).send(`Server Error: ${error.message}`);
+  }
+});
+
+
+// @route   DELETE api/dynamicforms/:id
+// @desc    delete dynamicforms by id
+// @access  Private
+
+router.delete("/:id", auth, async (req, res) => {
+  try {
+    const form = await DynamicForm.findOne({ _id: req.params.id });
+    if (!form) {
+      return res.status(404).json({ msg: "DynamicForm not found" });
+    }
+
+    await form.deleteOne();
+    res.json({ msg: "DynamicForm deleted successfully" });
+  } catch (error) {
+    console.error(error.message);
     res.status(500).send(`Server Error: ${error.message}`);
   }
 });
@@ -235,7 +235,6 @@ router.post(
     }
   }
 );
-
 
 
 // @route   PUT api/forms/:id
