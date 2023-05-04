@@ -13,12 +13,12 @@ const Faculty = require('../models/Faculty');
 
 
 // Set up your email transporter
-const transporter = nodemailer.createTransport({
-  service: 'gmail', // Use the email service of your choice
+let transporter = nodemailer.createTransport({
+  service: "gmail",
   auth: {
-    user: 'youremail@gmail.com',
-    pass: 'yourpassword'
-  }
+    user: "abdullah.mohammad2019274@gmail.com",
+    pass: "ewoesymbrpbypxep",
+  },
 });
 
 
@@ -130,13 +130,11 @@ router.post('/', [auth, upload.single('formDocument'),[
           department: student.faculty,
           'externalRoles.batch': student.batch
         });
-        console.log(approverFaculty);
       } else if (role === 'dean') {
         approverFaculty = await Faculty.findOne({
           'externalRoles.role': role,
           department: student.faculty
         });
-        console.log(approverFaculty);
       }
 
       if (approverFaculty) {
