@@ -41,7 +41,8 @@ const upload = multer({storage: storage});                                      
 router.get('/', auth , async (req, res) => {
   try {
     const forms = await Form.find({student: req.student.id}).sort({date: -1});
-    res.json(forms)
+    const student = await Student.findOne({ _id:forms[0].student});
+    res.json({student, forms});
   } catch (error) {
     if(error){
       console.error(error.message);
@@ -57,7 +58,8 @@ router.get('/', auth , async (req, res) => {
 router.get('/faculty', auth , async (req, res) => {
   try {
     const forms = await Form.find({faculty: req.faculty.id}).sort({date: -1});
-    res.json(forms)
+    const faculty = await Faculty.findOne({ _id:forms[0].faculty});
+    res.json({faculty,forms})
   } catch (error) {
     if(error){
       console.error(error.message);
