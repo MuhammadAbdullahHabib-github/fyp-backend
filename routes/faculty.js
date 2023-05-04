@@ -46,10 +46,13 @@ router.post('/', [
     }
     const { firstname, lastname, email, password, phoneNumber, department, role, subrole } = req.body;
     try {
-
+      let student = await Student.findOne({ email });
+      if (student) {
+        return res.status(400).json({ msg: "Email already registered by student or faculty." });
+      }
       let facultyMember = await Faculty.findOne({ email });
       if (facultyMember) {
-          return res.status(400).json({ msg: 'Faculty already exists' });
+          return res.status(400).json({ msg: 'Email already registered by student or faculty.' });
       }
   
       facultyMember = new Faculty({

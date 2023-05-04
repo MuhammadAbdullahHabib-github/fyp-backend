@@ -5,7 +5,9 @@ const { validationResult, check } = require("express-validator");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const config = require("config");
+
 const Student = require("../models/Student.js");
+const Faculty = require("../models/Faculty.js");
 const auth = require("../middleware/auth.js");
 const Form = require("../models/Form.js");
 
@@ -60,10 +62,15 @@ router.post(
       batch,
     } = req.body;
     try {
-      let student = await Student.findOne({ regnum });
+      let student = await Student.findOne({ email });
       if (student) {
-        return res.status(400).json({ msg: "Student already exists" });
+        return res.status(400).json({ msg: "Email already registered by student or faculty." });
       }
+      let faculty = await Faculty.findOne({ email });
+      if (faculty) {
+        return res.status(400).json({ msg: "Email already registered by student or faculty." });
+      }
+
       student = new Student({
         firstname,
         lastname,
