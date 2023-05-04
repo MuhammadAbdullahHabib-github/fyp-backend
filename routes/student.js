@@ -89,27 +89,30 @@ router.post(
       let mailOptions = {
         from: "abdullah.mohammad2019274@gmail.com",
         to: email,
-        subject: `${firstname}, your EDAS registration request has been received`,
-        text: `Dear ${firstname},
-
-Thank you for registering at EDAS.
-
-We have received your registration request and will verify your information. You will receive another email once your account is approved.
-
-Best regards,
-The EDAS Team
-`,
-        html: `
-    <div style="font-family: Arial, sans-serif;">
-      <h1 style="font-size: 18px; color: #333;">Dear ${firstname},</h1>
-      <h2 style="font-size: 16px; color: #333;">Thank you for registering at EDAS!</h2>
-      <p style="font-size: 14px; color: #666; text-indent: 30px;">We have received your registration request and will verify your information.</p>
-      <p style="font-size: 14px; color: #666; text-indent: 30px;">You will receive another email once your account is approved.</p>
-      <br>
-      <p style="font-size: 14px; color: #666;">Best regards,</p>
-      <p style="font-size: 14px; color: #666;">The EDAS Team</p>
-    </div>
-  `,
+        subject: `Welcome to EDAS, ${firstname} ${lastname}`,
+        text: `Dear ${firstname} ${lastname},
+      
+             We are delighted to welcome you to the EDAS platform at GIKI. We have received your registration request and will verify your information. You will receive another email once your account is approved by the administrator.
+             
+             If you encounter any issues or have any questions, please do not hesitate to contact our support team.
+             
+             We look forward to your active participation in our academic community.
+             
+             Best regards,
+             The EDAS Team
+             `,
+               html: `
+             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto;">
+               <h1 style="font-size: 18px; color: #333;">Dear ${firstname} ${lastname},</h1>
+               <h2 style="font-size: 16px; color: #333;">Welcome to the EDAS Platform at GIKI</h2>
+               <p style="font-size: 14px; color: #666; line-height: 1.5;">We are delighted to welcome you to the EDAS platform at GIKI. We have received your registration request and will verify your information. You will receive another email once your account is approved by the administrator.</p>
+               <p style="font-size: 14px; color: #666; line-height: 1.5;">If you encounter any issues or have any questions, please do not hesitate to contact our support team.</p>
+               <p style="font-size: 14px; color: #666; line-height: 1.5;">We look forward to your active participation in our academic community.</p>
+               <br>
+               <p style="font-size: 14px; color: #666;">Best regards,</p>
+               <p style="font-size: 14px; color: #666;">The EDAS Team</p>
+             </div>
+             `,
       };
 
       transporter.sendMail(mailOptions, (error, info) => {

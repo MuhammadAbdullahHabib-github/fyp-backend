@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const nodemailer = require("nodemailer");
 const { check, validationResult } = require('express-validator');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
@@ -10,6 +11,15 @@ const auth = require('../middleware/auth');
 const Faculty = require('../models/Faculty');
 const Form = require('../models/Form');
 const Student = require('../models/Student');
+
+// Create reusable transporter object using the default SMTP transport for nodemailer
+let transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: "abdullah.mohammad2019274@gmail.com",
+    pass: "ewoesymbrpbypxep",
+  },
+});
 
 
 
@@ -64,6 +74,45 @@ router.post('/', [
               lastname: facultyMember.lastname,
             },
       };
+
+      // send email to faculty member
+      let mailOptions = {
+        from: "abdullah.mohammad2019274@gmail.com",
+        to: email,
+        subject: `Welcome to EDAS, ${subrole} ${firstname} ${lastname}`,
+        text: `Dear ${subrole} ${firstname} ${lastname},
+      
+             We are delighted to welcome you to the EDAS platform at GIKI. We have received your registration request and will verify your information. You will receive another email once your account is approved by the administrator.
+             
+             If you encounter any issues or have any questions, please do not hesitate to contact our support team.
+             
+             We look forward to your active participation in our academic community.
+             
+             Best regards,
+             The EDAS Team
+             `,
+               html: `
+             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto;">
+               <h1 style="font-size: 18px; color: #333;">Dear ${subrole} ${firstname} ${lastname},</h1>
+               <h2 style="font-size: 16px; color: #333;">Welcome to the EDAS Platform at GIKI</h2>
+               <p style="font-size: 14px; color: #666; line-height: 1.5;">We are delighted to welcome you to the EDAS platform at GIKI. We have received your registration request and will verify your information. You will receive another email once your account is approved by the administrator.</p>
+               <p style="font-size: 14px; color: #666; line-height: 1.5;">If you encounter any issues or have any questions, please do not hesitate to contact our support team.</p>
+               <p style="font-size: 14px; color: #666; line-height: 1.5;">We look forward to your active participation in our academic community.</p>
+               <br>
+               <p style="font-size: 14px; color: #666;">Best regards,</p>
+               <p style="font-size: 14px; color: #666;">The EDAS Team</p>
+             </div>
+             `,
+      };
+      
+      transporter.sendMail(mailOptions, (error, info) => {
+        if (error) {
+          console.log(error);
+        } else {
+          console.log("Email sent: " + info.response);
+        }
+      });
+
   
       jwt.sign(payload, config.get('jwtsecret'), {
           expiresIn: 360000
