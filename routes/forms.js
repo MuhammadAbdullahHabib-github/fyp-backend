@@ -13,12 +13,9 @@ const Student = require('../models/Student');
 const Form = require('../models/Form');
 const Faculty = require('../models/Faculty');
 
-//crypto function of imange name
-
-const imageName = (bytes = 32) => crypto.randomBytes(bytes).toString('hex');
-
 //s3-bucket
-const { S3Client, PutObjectCommand } = require("@aws-sdk/client-s3");
+const { S3Client, PutObjectCommand , GetObjectCommand} = require("@aws-sdk/client-s3");
+const {getSignedUrl} = require('@aws-sdk/s3-request-presigner');
 const aws_Access_Key = config.get('ACCESS_KEY_ID');	// AWS access key
 const aws_Secret_Access_Key = config.get('SECRET_ACCESS_KEY');	// AWS secret key
 const aws_Bucket_Name = config.get('BUCKET_NAME');	// AWS region
@@ -29,7 +26,8 @@ const s3 = new S3Client({
   credentials: {
     accessKeyId: aws_Access_Key,
     secretAccessKey: aws_Secret_Access_Key
-  }
+  },
+  region: aws_Region
 });
 
 // Set up your email transporter
@@ -65,6 +63,16 @@ router.get('/', auth , async (req, res) => {
   try {
     const forms = await Form.find({student: req.student.id}).sort({date: -1});
     const student = await Student.findOne({ _id:forms[0].student});
+    for (const form of forms) {
+    const getObjectPatams = {
+      Bucket: aws_Bucket_Name,
+      Key: form.image,
+    };
+      const command = new GetObjectCommand(getObjectPatams);
+      const url = await getSignedUrl(s3, command, { expiresIn: 3600 });
+      form.image = url;
+    }
+
     res.json({student, forms});
   } catch (error) {
     if(error){
@@ -82,6 +90,15 @@ router.get('/faculty', auth , async (req, res) => {
   try {
     const forms = await Form.find({faculty: req.faculty.id}).sort({date: -1});
     const faculty = await Faculty.findOne({ _id:forms[0].faculty});
+    for (const form of forms) {
+      const getObjectPatams = {
+        Bucket: aws_Bucket_Name,
+        Key: form.image,
+      };
+        const command = new GetObjectCommand(getObjectPatams);
+        const url = await getSignedUrl(s3, command, { expiresIn: 3600 });
+        form.image = url;
+      }
     res.json({faculty,forms})
   } catch (error) {
     if(error){
@@ -103,8 +120,11 @@ router.post('/', [auth, upload.single('formDocument'),
   if (!errors.isEmpty()) {
     return res.status(400).json({ errors: errors.array() });
   }
+
   const { formName, responces, approvalHierarchy, faculty } = req.body;
-  const imageName = imageName();
+
+  //crypto function of imange name
+  const imageName = crypto.randomBytes(32).toString('hex');
   // Uploading the file in S3 Bucket
   const command = new PutObjectCommand({
     Bucket: aws_Bucket_Name,
@@ -114,9 +134,6 @@ router.post('/', [auth, upload.single('formDocument'),
   });
    
   await s3.send(command);
-  // Get the image URL
-  const imageUrl = `https://${aws_Bucket_Name}.s3.amazonaws.com/${imageName}`;
-
   try {
     const student = await Student.findOne({ _id:req.student.id});
     const approvers = Form.createApprovers(approvalHierarchy);
@@ -126,11 +143,10 @@ router.post('/', [auth, upload.single('formDocument'),
       faculty,
       responces,
       approvers,
-      imageUrl, // Add the imageUrl field
+      image: imageName, 
     });
     const submittedForm = await form.save();
     res.json(submittedForm);
-
     // Iterate through the approval hierarchy
     for (const role of approvalHierarchy) {
       let approverFaculty;

@@ -45,7 +45,7 @@ const FormSubmissionSchema = new Schema({
     type: [ApproverSchema],
     required: true,
   },
-  imageUrl: {
+  image: {
     type: String,
   },
   date: {
