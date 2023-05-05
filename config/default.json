@@ -5,5 +5,9 @@
     "database": "demoEdasDatabase",
     "password": "pelikan1",
     "jwtsecret":"secret",
-    "PORT":8000
+    "PORT":8000,
+    "BUCKET_NAME":"edasbucket",
+    "BUCKET_REGION":"ap-south-1",
+    "ACCESS_KEY_ID":"AKIAWH7Y3NY3G3I22XE7",
+    "SECRET_ACCESS_KEY":"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"
 }

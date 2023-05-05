@@ -3,14 +3,34 @@ const router = express.Router();
 const nodemailer = require('nodemailer');
 const { check, validationResult } = require('express-validator');
 const multer = require('multer');
-const path = require('path');
+// const path = require('path');
 const auth = require('../middleware/auth');
 // const upload = multer({ dest: 'uploads/' });
+const config = require('config');
+const crypto = require('crypto');
 
 const Student = require('../models/Student');
 const Form = require('../models/Form');
 const Faculty = require('../models/Faculty');
 
+//crypto function of imange name
+
+const imageName = (bytes = 32) => crypto.randomBytes(bytes).toString('hex');
+
+//s3-bucket
+const { S3Client, PutObjectCommand } = require("@aws-sdk/client-s3");
+const aws_Access_Key = config.get('ACCESS_KEY_ID');	// AWS access key
+const aws_Secret_Access_Key = config.get('SECRET_ACCESS_KEY');	// AWS secret key
+const aws_Bucket_Name = config.get('BUCKET_NAME');	// AWS region
+const aws_Region = config.get('BUCKET_REGION');	// AWS bucket name	
+
+const s3 = new S3Client({
+  region: aws_Region,
+  credentials: {
+    accessKeyId: aws_Access_Key,
+    secretAccessKey: aws_Secret_Access_Key
+  }
+});
 
 // Set up your email transporter
 let transporter = nodemailer.createTransport({
@@ -22,18 +42,21 @@ let transporter = nodemailer.createTransport({
 });
 
 
-//-----------------------------------------------------------------------------------------//-
-const storage = multer.diskStorage({                                                       //- 
-  destination: function(req,file,callback){                                                //-                   
-    return callback(null, './uploads');                                                    //-                        
-  },                                                                                       //-                         
-  filename: function(req, file, callback){                                                 //-                  
-     callback(null, file.fieldname + '-' + Date.now() + path.extname(file.originalname));  //-        
-  }                                                                                        //-
-});                                                                                        //- 
-const upload = multer({storage: storage});                                                 //-
-//-----------------------------------------------------------------------------------------//-
+//--------------------------------------------------------------------------------------------//-
+// const storage = multer.diskStorage({                                                       //- 
+//   destination: function(req,file,callback){                                                //-                   
+//     return callback(null, './uploads');                                                    //-                        
+//   },                                                                                       //-                         
+//   filename: function(req, file, callback){                                                 //-                  
+//      callback(null, file.fieldname + '-' + Date.now() + path.extname(file.originalname));  //-        
+//   }                                                                                        //-
+// });                                                                                        //- 
+// const upload = multer({storage: storage});                                                 //-
+//--------------------------------------------------------------------------------------------//-
 
+const storage = multer.memoryStorage();
+const upload = multer({ storage: storage});
+ 
 // @route   GET api/forms
 // @desc    Get all the specific student's forms
 // @access  Private
@@ -68,48 +91,32 @@ router.get('/faculty', auth , async (req, res) => {
   }
 });
 
-
 // @route   POST api/forms
 // @desc    Add new form for student
 // @access  Private
 // 'formDocument' is the name of the file input field in the form
 
-// router.post('/', [auth, upload.single('formDocument'),[
-//   check('formName', 'Form Name is required').not().isEmpty(),
-// ]], async (req, res) => {
-//   const errors = validationResult(req);
-//   if (!errors.isEmpty()) {
-//     return res.status(400).json({ errors: errors.array() });
-//   }
-//   const { formName, responces, approvalHierarchy, faculty } = req.body;
-//   try {
-//     const student = await Student.findOne({ _id:req.student.id});
-//     const approvers = Form.createApprovers(approvalHierarchy);
-//     const form = new Form({
-//       student: req.student.id,
-//       formName,
-//       faculty,
-//       responces,
-//       approvers
-//     });
-//     const submittedForm = await form.save();
-//     res.json(submittedForm);
-//   } catch (error) {
-//     console.error(error.message);
-//     res.status(500).send(`Server Error: ${error.message}`);
-//   }
-// });
-
-
-
-router.post('/', [auth, upload.single('formDocument'),[
-  check('formName', 'Form Name is required').not().isEmpty(),
-]], async (req, res) => {
+router.post('/', [auth, upload.single('formDocument'),
+[check('formName', 'Form Name is required').not().isEmpty(),]
+], async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return res.status(400).json({ errors: errors.array() });
   }
   const { formName, responces, approvalHierarchy, faculty } = req.body;
+  const imageName = imageName();
+  // Uploading the file in S3 Bucket
+  const command = new PutObjectCommand({
+    Bucket: aws_Bucket_Name,
+    Key: imageName,
+    Body: req.file.buffer,
+    ContentType: req.file.mimetype,
+  });
+   
+  await s3.send(command);
+  // Get the image URL
+  const imageUrl = `https://${aws_Bucket_Name}.s3.amazonaws.com/${imageName}`;
+
   try {
     const student = await Student.findOne({ _id:req.student.id});
     const approvers = Form.createApprovers(approvalHierarchy);
@@ -118,7 +125,8 @@ router.post('/', [auth, upload.single('formDocument'),[
       formName,
       faculty,
       responces,
-      approvers
+      approvers,
+      imageUrl, // Add the imageUrl field
     });
     const submittedForm = await form.save();
     res.json(submittedForm);
