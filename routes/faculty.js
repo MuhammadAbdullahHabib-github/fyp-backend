@@ -343,7 +343,7 @@ router.get("/facultyForms", auth, async (req, res) => {
       
         if (role === "dean") {
           shouldAddForm = form.faculty.department === faculty.department;
-        } else if (role === "HR" || role === "Rector") {
+        } else if (role === "HR" || role === "Rector" || role === "Pro-Rector (A)" || role === "Pro-Rector (A&F)" || role === "Director Facilitation" || role === "Account Section" || role === "IT Manager" || role === "Transportation Manager" || role === "Security Manager" || role === "Incharge of Guest House" || role === "Secretary of Faculty Club") {
           shouldAddForm = true;
         }
       
@@ -465,7 +465,7 @@ router.put("/studentForms/:id", auth, async (req, res) => {
 
 const sendApprovalEmailFaculty = async (facultyEmail, formName, facultyName, approverRole) => {
   const mailOptions = {
-    from: 'your-email@example.com', // Your email address
+    from: 'abdullah.mohammad2019274@gmail.com', // Your email address
     to: facultyEmail,
     subject: 'Form Approval Update',
     text: `Dear ${facultyName},\n` +
@@ -580,7 +580,7 @@ const sendDisapprovalEmail = async (studentEmail, formName, studentName, approve
 };
 
 
-// @route PUT api/faculty/studentForms/:id
+// @route PUT api/faculty/studentForms/disapprove/:id
 // @desc disapproved the form according to hirerchcy
 // @access Private
 
