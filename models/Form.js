@@ -40,6 +40,9 @@ const FormSubmissionSchema = new Schema({
     type: String,
     required: true
   },
+  department: {
+    type: String,
+  },
   responces: {
     type: Object,
     required: true
