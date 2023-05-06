@@ -195,6 +195,61 @@ router.put("/update", auth, async (req, res) => {
 // @desc get the form according to hirerchcy like advisor or dean
 // @access Private
 
+// router.get("/studentForms", auth, async (req, res) => {
+//   try {
+//     const faculty = await Faculty.findById(req.faculty.id);
+//     if (!faculty) {
+//       return res.status(404).json({ msg: "Faculty not found" });
+//     }
+
+//     const matchedForms = {};
+
+//     for (const externalRole of faculty.externalRoles) {
+//       const role = externalRole.role;
+
+//       const forms = await Form.find({
+//         "approvers.role": role,
+//         faculty: externalRole.externalfaculty,
+//       }).populate("student");
+
+//       matchedForms[role] = [];
+
+//       forms.forEach((form) => {
+//         const approverIndex = form.approvers.findIndex(
+//           (approver) => approver.role === role
+//         );
+
+//         if (approverIndex > 0 && !form.approvers[approverIndex - 1].approved) {
+//           // Skip the form if the previous approver hasn't approved it yet
+//           return;
+//         }
+
+//         // Add custom filters for each role as needed
+//         let shouldAddForm = true;
+
+//         if (role === "advisor") {
+//           // Filter forms where the advisor's batch matches the student's batch
+//           shouldAddForm = form.student.batch == externalRole.batch;
+//         } else if (role === "dean") {
+//           shouldAddForm = form.student.faculty === faculty.department;
+//         }
+
+//         // Add any additional role-based filters here
+
+//         if (shouldAddForm) {
+//           matchedForms[role].push(form);
+//         }
+//       });
+//     }
+
+//     res.json(matchedForms[faculty.externalRoles[0].role]);
+//   } catch (error) {
+//     console.error(error.message);
+//     res.status(500).send(`Server Error: ${error.message}`);
+//   }
+// });
+
+
 router.get("/studentForms", auth, async (req, res) => {
   try {
     const faculty = await Faculty.findById(req.faculty.id);
@@ -224,6 +279,8 @@ router.get("/studentForms", auth, async (req, res) => {
           return;
         }
 
+        const isFormReviewed = form.approvers[approverIndex].approved || form.approvers[approverIndex].disapproved;
+
         // Add custom filters for each role as needed
         let shouldAddForm = true;
 
@@ -236,7 +293,7 @@ router.get("/studentForms", auth, async (req, res) => {
 
         // Add any additional role-based filters here
 
-        if (shouldAddForm) {
+        if (shouldAddForm && !isFormReviewed) {
           matchedForms[role].push(form);
         }
       });
@@ -248,6 +305,57 @@ router.get("/studentForms", auth, async (req, res) => {
     res.status(500).send(`Server Error: ${error.message}`);
   }
 });
+
+
+// router.get("/pendingStudentForms", auth, async (req, res) => {
+//   try {
+//     const faculty = await Faculty.findById(req.faculty.id);
+//     if (!faculty) {
+//       return res.status(404).json({ msg: "Faculty not found" });
+//     }
+
+//     const pendingForms = [];
+
+//     for (const externalRole of faculty.externalRoles) {
+//       const role = externalRole.role;
+
+//       const forms = await Form.find({
+//         "approvers.role": role,
+//         faculty: externalRole.externalfaculty,
+//       }).populate("student");
+
+//       forms.forEach((form) => {
+//         const approverIndex = form.approvers.findIndex(
+//           (approver) => approver.role === role
+//         );
+
+//         const isCurrentApprover = approverIndex === 0 || form.approvers[approverIndex - 1].approved;
+//         const hasCurrentApproverApproved = form.approvers[approverIndex].approved;
+
+//         // Add custom filters for each role as needed
+//         let shouldAddForm = true;
+
+//         if (role === "advisor") {
+//           // Filter forms where the advisor's batch matches the student's batch
+//           shouldAddForm = form.student.batch == externalRole.batch;
+//         } else if (role === "dean") {
+//           shouldAddForm = form.student.faculty === faculty.department;
+//         }
+
+//         // Add any additional role-based filters here
+
+//         if (shouldAddForm && isCurrentApprover && !hasCurrentApproverApproved) {
+//           pendingForms.push(form);
+//         }
+//       });
+//     }
+
+//     res.json(pendingForms);
+//   } catch (error) {
+//     console.error(error.message);
+//     res.status(500).send(`Server Error: ${error.message}`);
+//   }
+// });
 
 
 
@@ -300,6 +408,64 @@ router.get("/studentForms/approvedOrDisapproved", auth, async (req, res) => {
 // @desc get the form according to hirerchcy like  or dean
 // @access Private
 
+// router.get("/facultyForms", auth, async (req, res) => {
+//   try {
+//     const faculty = await Faculty.findById(req.faculty.id);
+//     if (!faculty) {
+//       return res.status(404).json({ msg: "Faculty not found" });
+//     }
+
+//     const matchedForms = {};
+
+//     for (const externalRole of faculty.externalRoles) {
+//       const role = externalRole.role;
+
+//       const forms = await Form.find({
+//         "approvers.role": role,
+//         $or: [
+//           { department: externalRole.externalfaculty },
+//           { "approvers.role": { $in: ["HR", "Rector"] } },
+//         ],
+//       }).populate({ path: "faculty", model: "faculty" });
+
+//       matchedForms[role] = [];
+
+//       forms.forEach((form) => {
+//         const approverIndex = form.approvers.findIndex(
+//           (approver) => approver.role === role
+//         );
+      
+//         if (approverIndex > 0 && !form.approvers[approverIndex - 1].approved) {
+//           // Skip the form if the previous approver hasn't approved it yet
+//           return;
+//         }
+      
+//         // Add custom filters for each role as needed
+//         let shouldAddForm = true;
+      
+//         if (role === "dean") {
+//           shouldAddForm = form.faculty.department === faculty.department;
+//         } else if (role === "Committee Convener") {
+//           shouldAddForm = form.faculty.department === faculty.department;
+//         } else if (role === "HR" || role === "Rector" || role === "Pro-Rector (A)" || role === "Pro-Rector (A&F)" || role === "Director Facilitation" || role === "Account Section" || role === "IT Manager" || role === "Transportation Manager" || role === "Security Manager" || role === "Incharge of Guest House" || role === "Secretary of Faculty Club") {
+//           shouldAddForm = true;
+//         }
+      
+//         // Add any additional role-based filters here
+      
+//         if (shouldAddForm) {
+//           matchedForms[role].push(form);
+//         }
+//       });
+//   }
+
+//     res.json(matchedForms[faculty.externalRoles[0].role]);
+//   } catch (error) {
+//     console.error(error.message);
+//     res.status(500).send(`Server Error: ${error.message}`);
+//   }
+// });
+
 router.get("/facultyForms", auth, async (req, res) => {
   try {
     const faculty = await Faculty.findById(req.faculty.id);
@@ -307,7 +473,7 @@ router.get("/facultyForms", auth, async (req, res) => {
       return res.status(404).json({ msg: "Faculty not found" });
     }
 
-    const matchedForms = {};
+    const pendingForms = [];
 
     for (const externalRole of faculty.externalRoles) {
       const role = externalRole.role;
@@ -320,21 +486,17 @@ router.get("/facultyForms", auth, async (req, res) => {
         ],
       }).populate({ path: "faculty", model: "faculty" });
 
-      matchedForms[role] = [];
-
       forms.forEach((form) => {
         const approverIndex = form.approvers.findIndex(
           (approver) => approver.role === role
         );
-      
-        if (approverIndex > 0 && !form.approvers[approverIndex - 1].approved) {
-          // Skip the form if the previous approver hasn't approved it yet
-          return;
-        }
-      
+
+        const isCurrentApprover = approverIndex === 0 || form.approvers[approverIndex - 1].approved;
+        const isFormReviewed = form.approvers[approverIndex].approved || form.approvers[approverIndex].disapproved;
+
         // Add custom filters for each role as needed
         let shouldAddForm = true;
-      
+
         if (role === "dean") {
           shouldAddForm = form.faculty.department === faculty.department;
         } else if (role === "Committee Convener") {
@@ -342,21 +504,22 @@ router.get("/facultyForms", auth, async (req, res) => {
         } else if (role === "HR" || role === "Rector" || role === "Pro-Rector (A)" || role === "Pro-Rector (A&F)" || role === "Director Facilitation" || role === "Account Section" || role === "IT Manager" || role === "Transportation Manager" || role === "Security Manager" || role === "Incharge of Guest House" || role === "Secretary of Faculty Club") {
           shouldAddForm = true;
         }
-      
+
         // Add any additional role-based filters here
-      
-        if (shouldAddForm) {
-          matchedForms[role].push(form);
+
+        if (shouldAddForm && isCurrentApprover && !isFormReviewed) {
+          pendingForms.push(form);
         }
       });
-  }
+    }
 
-    res.json(matchedForms[faculty.externalRoles[0].role]);
+    res.json(pendingForms);
   } catch (error) {
     console.error(error.message);
     res.status(500).send(`Server Error: ${error.message}`);
   }
 });
+
 
 // @route GET api/faculty/facultyForms/approvedOrDisapproved
 // @desc Get all the forms approved or disapproved by the faculty members
