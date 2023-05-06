@@ -216,6 +216,7 @@ router.post(
           firstname: faculty.firstname,
           lastname: faculty.lastname,
           role: faculty.role,
+          department: faculty.department,
         },
       };
       jwt.sign(

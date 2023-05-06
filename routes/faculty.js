@@ -271,7 +271,7 @@ router.get("/facultyForms", auth, async (req, res) => {
         "approvers.role": role,
         department: externalRole.externalfaculty,
       }).populate('faculty');
-      console.log(forms, "forms");
+      // console.log(forms, "forms");
       matchedForms[role] = [];
 
       forms.forEach((form) => {
@@ -287,7 +287,6 @@ router.get("/facultyForms", auth, async (req, res) => {
         // Add custom filters for each role as needed
         let shouldAddForm = true;
 
-        // Keep only the "dean" role check and use faculty instead of form.student.faculty
         if (role === "dean") {
           shouldAddForm = form.faculty.department === faculty.department;
         }
