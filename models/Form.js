@@ -17,7 +17,10 @@ const ApproverSchema = new mongoose.Schema({
   disapproved:{
     type: Boolean,
     default: false,
-  }
+  }, 
+  comment: {
+    type: String,
+  },
 });
 
 const FormSubmissionSchema = new Schema({
@@ -64,6 +67,7 @@ FormSubmissionSchema.statics.createApprovers = function (approvalHierarchy) {
     order: index + 1,
     approved: false,
     disapproved:false,
+    comment: "",
   }));
 };
 

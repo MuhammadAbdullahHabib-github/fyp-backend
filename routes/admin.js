@@ -417,7 +417,6 @@ router.put("/faculty/data/:id", auth, async (req, res) => {
     department,
     role,
     subrole,
-    accept,
     courses,
     externalRoles,
   } = req.body;
