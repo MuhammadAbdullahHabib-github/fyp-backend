@@ -202,7 +202,7 @@ router.get("/studentForms", auth, async (req, res) => {
     if (!faculty) {
       return res.status(404).json({ msg: "Faculty not found" });
     }
-
+    // res.send(faculty);
     const matchedForms = {};
 
     for (const externalRole of faculty.externalRoles) {
