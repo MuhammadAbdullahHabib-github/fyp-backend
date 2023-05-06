@@ -68,14 +68,17 @@ router.get("/", auth, async (req, res) => {
       date: -1,
     });
     const student = await Student.findOne({ _id: forms[0].student });
+
     for (const form of forms) {
-      const getObjectPatams = {
-        Bucket: aws_Bucket_Name,
-        Key: form.image,
-      };
-      const command = new GetObjectCommand(getObjectPatams);
-      const url = await getSignedUrl(s3, command, { expiresIn: 3600 });
-      form.image = url;
+      if (form.image) {
+        const getObjectPatams = {
+          Bucket: aws_Bucket_Name,
+          Key: form.image,
+        };
+        const command = new GetObjectCommand(getObjectPatams);
+        const url = await getSignedUrl(s3, command, { expiresIn: 3600 });
+        form.image = url;
+      }
     }
 
     res.json({ student, forms });
