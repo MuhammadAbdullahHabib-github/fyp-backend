@@ -261,7 +261,6 @@ router.get("/facultyForms", auth, async (req, res) => {
       return res.status(404).json({ msg: "Faculty not found" });
     }
 
-    // console.log("faculty", faculty);
     const matchedForms = {};
 
     for (const externalRole of faculty.externalRoles) {
@@ -270,8 +269,8 @@ router.get("/facultyForms", auth, async (req, res) => {
       const forms = await Form.find({
         "approvers.role": role,
         department: externalRole.externalfaculty,
-      }).populate('faculty');
-      // console.log(forms, "forms");
+      }).populate({ path: 'faculty', model: 'faculty' });
+
       matchedForms[role] = [];
 
       forms.forEach((form) => {
@@ -288,7 +287,7 @@ router.get("/facultyForms", auth, async (req, res) => {
         let shouldAddForm = true;
 
         if (role === "dean") {
-          shouldAddForm = form.faculty.department === faculty.department;
+          shouldAddForm = form.department === faculty.department;
         }
 
         // Add any additional role-based filters here
