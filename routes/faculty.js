@@ -343,6 +343,8 @@ router.get("/facultyForms", auth, async (req, res) => {
       
         if (role === "dean") {
           shouldAddForm = form.faculty.department === faculty.department;
+        } else if (role === "Committee Convener") {
+          shouldAddForm = form.faculty.department === faculty.department;
         } else if (role === "HR" || role === "Rector" || role === "Pro-Rector (A)" || role === "Pro-Rector (A&F)" || role === "Director Facilitation" || role === "Account Section" || role === "IT Manager" || role === "Transportation Manager" || role === "Security Manager" || role === "Incharge of Guest House" || role === "Secretary of Faculty Club") {
           shouldAddForm = true;
         }
