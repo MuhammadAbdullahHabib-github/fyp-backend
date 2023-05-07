@@ -272,11 +272,11 @@ router.get("/names", async (req, res) => {
 
 
 
-// @route   GET api/forms/formsStats
+// @route   GET api/forms/formStats
 // @desc    Get all the forms
 // @access  Private
 
-router.post("/formsStats", auth, async (req, res) => {
+router.post("/formStats", auth, async (req, res) => {
   try {
     const { time, department, formName } = req.body;
 
@@ -284,6 +284,16 @@ router.post("/formsStats", auth, async (req, res) => {
     let endDate = new Date();
 
     switch (time) {
+      case "today":
+        startDate.setHours(0, 0, 0, 0);
+        endDate.setHours(23, 59, 59, 999);
+        break;
+      case "yesterday":
+        startDate.setDate(startDate.getDate() - 1);
+        startDate.setHours(0, 0, 0, 0);
+        endDate.setDate(endDate.getDate() - 1);
+        endDate.setHours(23, 59, 59, 999);
+        break;
       case "lastWeek":
         startDate.setDate(startDate.getDate() - 7);
         break;
@@ -297,11 +307,19 @@ router.post("/formsStats", auth, async (req, res) => {
         return res.status(400).json({ msg: "Invalid time range" });
     }
 
-    const forms = await Form.find({
-      department,
-      formName,
+    const query = {
       date: { $gte: startDate, $lte: endDate },
-    });
+    };
+
+    if (department !== "all") {
+      query.department = department;
+    }
+
+    if (formName !== "all") {
+      query.formName = formName;
+    }
+
+    const forms = await Form.find(query);
 
     let totalForms = 0;
     let approvedForms = 0;
@@ -334,6 +352,7 @@ router.post("/formsStats", auth, async (req, res) => {
     res.status(500).send(`Server Error: ${error.message}`);
   }
 });
+
 
 
 //-----------------------------------API for Admin Dashboard showing current and pending users----------------------------------------------
