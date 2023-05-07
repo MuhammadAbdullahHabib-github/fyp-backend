@@ -303,7 +303,7 @@ router.get("/formStats", auth, async (req, res) => {
       case "lastYear":
         startDate.setFullYear(startDate.getFullYear() - 1);
         break;
-      case "allTime":
+      case "all":
         startDate = new Date(0); // Set startDate to the earliest possible date
         break;
       default:
