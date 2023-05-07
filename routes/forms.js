@@ -278,7 +278,7 @@ router.get("/names", async (req, res) => {
 
 router.get("/formStats", auth, async (req, res) => {
   try {
-    const { time, department, formName } = req.query;
+    const { time, faculty, formName } = req.query;
 
     let startDate = new Date();
     let endDate = new Date();
@@ -304,18 +304,20 @@ router.get("/formStats", auth, async (req, res) => {
         startDate.setFullYear(startDate.getFullYear() - 1);
         break;
       case "all":
-        startDate = new Date(0); // Set startDate to the earliest possible date
+        // Do nothing, as we want to retrieve all data regardless of time range
         break;
       default:
         return res.status(400).json({ msg: "Invalid time range" });
     }
 
-    const query = {
-      date: { $gte: startDate, $lte: endDate },
-    };
+    const query = {};
+    
+    if (time !== "all") {
+      query.date = { $gte: startDate, $lte: endDate };
+    }
 
-    if (department !== "all") {
-      query.department = department;
+    if (faculty !== "all") {
+      query.faculty = faculty;
     }
 
     if (formName !== "all") {
@@ -355,6 +357,7 @@ router.get("/formStats", auth, async (req, res) => {
     res.status(500).send(`Server Error: ${error.message}`);
   }
 });
+
 
 
 
