@@ -90,6 +90,75 @@ router.get("/", auth, async (req, res) => {
   }
 });
 
+
+// @route   GET /forms/student/all
+// @desc    Get all student forms with image URLs
+// @access  Private
+router.get("/student/all", auth, async (req, res) => {
+  try {
+    const forms = await Form.find({
+      student: { $exists: true },
+      faculty: { $exists: true },
+      formName: { $exists: true },
+    });
+
+    const formsWithImageUrls = [];
+
+    for (const form of forms) {
+      if (form.image) {
+        const getObjectParams = {
+          Bucket: aws_Bucket_Name,
+          Key: form.image,
+        };
+        const command = new GetObjectCommand(getObjectParams);
+        const url = await getSignedUrl(s3, command, { expiresIn: 3600 });
+        form.image = url;
+      }
+      formsWithImageUrls.push(form);
+    }
+
+    res.json(formsWithImageUrls);
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).send(`Server Error: ${error.message}`);
+  }
+});
+
+
+// @route   GET /forms/faculty/all
+// @desc    Get all faculty forms with image URLs
+// @access  Private
+router.get("/faculty/all", auth, async (req, res) => {
+  try {
+    const forms = await Form.find({
+      faculty: { $exists: true },
+      department: { $exists: true },
+    });
+
+    const formsWithImageUrls = [];
+
+    for (const form of forms) {
+      if (form.image) {
+        const getObjectParams = {
+          Bucket: aws_Bucket_Name,
+          Key: form.image,
+        };
+        const command = new GetObjectCommand(getObjectParams);
+        const url = await getSignedUrl(s3, command, { expiresIn: 3600 });
+        form.image = url;
+      }
+      formsWithImageUrls.push(form);
+    }
+
+    res.json(formsWithImageUrls);
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).send(`Server Error: ${error.message}`);
+  }
+});
+
+
+
 // @route   GET api/forms/faculty
 // @desc    Get all the specific faculty's forms
 // @access  Private
@@ -450,89 +519,6 @@ router.get("/names", async (req, res) => {
 // @route   GET api/forms/formStats
 // @desc    Get all the forms
 // @access  Private
-
-// router.get("/formStats", auth, async (req, res) => {
-//   try {
-//     const { time, faculty, formName } = req.query;
-
-//     let startDate = new Date();
-//     let endDate = new Date();
-
-//     switch (time) {
-//       case "today":
-//         startDate.setHours(0, 0, 0, 0);
-//         endDate.setHours(23, 59, 59, 999);
-//         break;
-//       case "yesterday":
-//         startDate.setDate(startDate.getDate() - 1);
-//         startDate.setHours(0, 0, 0, 0);
-//         endDate.setDate(endDate.getDate() - 1);
-//         endDate.setHours(23, 59, 59, 999);
-//         break;
-//       case "lastWeek":
-//         startDate.setDate(startDate.getDate() - 7);
-//         break;
-//       case "lastMonth":
-//         startDate.setMonth(startDate.getMonth() - 1);
-//         break;
-//       case "lastYear":
-//         startDate.setFullYear(startDate.getFullYear() - 1);
-//         break;
-//       case "all":
-//         // Do nothing, as we want to retrieve all data regardless of time range
-//         break;
-//       default:
-//         return res.status(400).json({ msg: "Invalid time range" });
-//     }
-
-//     const query = {};
-    
-//     if (time !== "all") {
-//       query.date = { $gte: startDate, $lte: endDate };
-//     }
-
-//     if (faculty !== "all") {
-//       query.faculty = faculty;
-//     }
-
-//     if (formName !== "all") {
-//       query.formName = formName;
-//     }
-
-//     const forms = await Form.find(query);
-
-//     let totalForms = 0;
-//     let approvedForms = 0;
-//     let rejectedForms = 0;
-//     let pendingForms = 0;
-
-//     forms.forEach((form) => {
-//       totalForms++;
-
-//       const allApproved = form.approvers.every((approver) => approver.approved);
-//       const anyRejected = form.approvers.some((approver) => approver.disapproved);
-
-//       if (allApproved) {
-//         approvedForms++;
-//       } else if (anyRejected) {
-//         rejectedForms++;
-//       } else {
-//         pendingForms++;
-//       }
-//     });
-
-//     res.json({
-//       totalForms,
-//       approvedForms,
-//       rejectedForms,
-//       pendingForms,
-//     });
-//   } catch (error) {
-//     console.error(error.message);
-//     res.status(500).send(`Server Error: ${error.message}`);
-//   }
-// });
-
 
 router.get("/formStats", auth, async (req, res) => {
   try {
