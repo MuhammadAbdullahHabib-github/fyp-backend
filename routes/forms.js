@@ -261,7 +261,7 @@ router.post(
 // @desc    Get all the form names
 // @access  Private
 
-app.get("/names", async (req, res) => {
+router.get("/names", async (req, res) => {
   try {
     const formNames = await Form.distinct("formName");
     res.json(formNames);
