@@ -509,7 +509,7 @@ router.get("/studentForms", auth, async (req, res) => {
 // });
 
 
-router.get("/studentForms/approvedOrDisapproved", auth, async (req, res) => {
+router.get("/facultyForms/approvedOrDisapproved", auth, async (req, res) => {
   try {
     const faculty = await Faculty.findById(req.faculty.id);
     if (!faculty) {
@@ -523,22 +523,25 @@ router.get("/studentForms/approvedOrDisapproved", auth, async (req, res) => {
 
       const forms = await Form.find({
         "approvers.role": role,
-        faculty: externalRole.externalfaculty,
-      }).populate("student");
+        $or: [
+          { department: externalRole.externalfaculty },
+          { "approvers.role": { $in: ["HR", "Rector"] } },
+        ],
+      }).populate({ path: "faculty", model: "faculty" });
 
       for (const form of forms) {
         const approverIndex = form.approvers.findIndex(
           (approver) => approver.role === role
         );
 
+        let imageUrl;
         if (form.image) {
           const getObjectParams = {
             Bucket: aws_Bucket_Name,
             Key: form.image,
           };
           const command = new GetObjectCommand(getObjectParams);
-          const url = await getSignedUrl(s3, command, { expiresIn: 3600 });
-          form.image = url;
+          imageUrl = await getSignedUrl(s3, command, { expiresIn: 3600 });
         }
 
         // Check if the form is approved or disapproved by the current faculty member
@@ -546,7 +549,11 @@ router.get("/studentForms/approvedOrDisapproved", auth, async (req, res) => {
           form.approvers[approverIndex].approved ||
           form.approvers[approverIndex].disapproved
         ) {
-          approvedOrDisapprovedForms.push(form);
+          const formWithImageUrl = {
+            ...form.toObject(),
+            image: imageUrl,
+          };
+          approvedOrDisapprovedForms.push(formWithImageUrl);
         }
       }
     }
@@ -557,6 +564,7 @@ router.get("/studentForms/approvedOrDisapproved", auth, async (req, res) => {
     res.status(500).send(`Server Error: ${error.message}`);
   }
 });
+
 
 
 
@@ -827,14 +835,14 @@ router.get("/facultyForms/approvedOrDisapproved", auth, async (req, res) => {
           (approver) => approver.role === role
         );
 
+        let imageUrl;
         if (form.image) {
           const getObjectParams = {
             Bucket: aws_Bucket_Name,
             Key: form.image,
           };
           const command = new GetObjectCommand(getObjectParams);
-          const url = await getSignedUrl(s3, command, { expiresIn: 3600 });
-          form.image = url;
+          imageUrl = await getSignedUrl(s3, command, { expiresIn: 3600 });
         }
 
         // Check if the form is approved or disapproved by the current faculty member
@@ -842,7 +850,11 @@ router.get("/facultyForms/approvedOrDisapproved", auth, async (req, res) => {
           form.approvers[approverIndex].approved ||
           form.approvers[approverIndex].disapproved
         ) {
-          approvedOrDisapprovedForms.push(form);
+          const formWithImageUrl = {
+            ...form.toObject(),
+            image: imageUrl,
+          };
+          approvedOrDisapprovedForms.push(formWithImageUrl);
         }
       }
     }
