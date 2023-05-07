@@ -111,7 +111,7 @@ router.get("/faculty", auth, async (req, res) => {
         form.image = url;
       }
     }
-    
+
     res.json({ faculty, forms });
   } catch (error) {
     if (error) {
@@ -253,5 +253,125 @@ router.post(
     }
   }
 );
+
+
+//-----------------------------------API for Admin Dashboard----------------------------------------------
+
+// @route   GET api/forms/names
+// @desc    Get all the form names
+// @access  Private
+
+app.get("/names", async (req, res) => {
+  try {
+    const formNames = await Form.distinct("formName");
+    res.json(formNames);
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching form names" });
+  }
+});
+
+
+
+// @route   GET api/forms/formsStats
+// @desc    Get all the forms
+// @access  Private
+
+router.post("/formsStats", auth, async (req, res) => {
+  try {
+    const { time, department, formName } = req.body;
+
+    let startDate = new Date();
+    let endDate = new Date();
+
+    switch (time) {
+      case "lastWeek":
+        startDate.setDate(startDate.getDate() - 7);
+        break;
+      case "lastMonth":
+        startDate.setMonth(startDate.getMonth() - 1);
+        break;
+      case "lastYear":
+        startDate.setFullYear(startDate.getFullYear() - 1);
+        break;
+      default:
+        return res.status(400).json({ msg: "Invalid time range" });
+    }
+
+    const forms = await Form.find({
+      department,
+      formName,
+      date: { $gte: startDate, $lte: endDate },
+    });
+
+    let totalForms = 0;
+    let approvedForms = 0;
+    let rejectedForms = 0;
+    let pendingForms = 0;
+
+    forms.forEach((form) => {
+      totalForms++;
+
+      const allApproved = form.approvers.every((approver) => approver.approved);
+      const anyRejected = form.approvers.some((approver) => approver.disapproved);
+
+      if (allApproved) {
+        approvedForms++;
+      } else if (anyRejected) {
+        rejectedForms++;
+      } else {
+        pendingForms++;
+      }
+    });
+
+    res.json({
+      totalForms,
+      approvedForms,
+      rejectedForms,
+      pendingForms,
+    });
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).send(`Server Error: ${error.message}`);
+  }
+});
+
+
+//-----------------------------------API for Admin Dashboard showing current and pending users----------------------------------------------
+
+// @route   GET api/forms/userStats
+// @desc    Get all the forms
+// @access  Private
+
+router.get("/userStats", async (req, res) => {
+  try {
+    const approvedStudents = await Student.countDocuments({ accept: true });
+    const pendingStudents = await Student.countDocuments({ accept: false });
+    const approvedFaculty = await Faculty.countDocuments({ accept: true });
+    const pendingFaculty = await Faculty.countDocuments({ accept: false });
+
+    const totalApproved = approvedStudents + approvedFaculty;
+    const totalPending = pendingStudents + pendingFaculty;
+
+    res.json({
+      totalApproved,
+      totalPending,
+      students: {
+        approved: approvedStudents,
+        pending: pendingStudents,
+      },
+      faculty: {
+        approved: approvedFaculty,
+        pending: pendingFaculty,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching user stats" });
+  }
+});
+
+
+
+
+
 
 module.exports = router;
