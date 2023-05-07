@@ -126,11 +126,103 @@ router.get("/faculty", auth, async (req, res) => {
 // @access  Private
 // 'formDocument' is the name of the file input field in the form
 
+// router.post(
+//   "/",
+//   [
+//     auth,
+//     upload.single("formDocument"),
+//     [check("formName", "Form Name is required").not().isEmpty()],
+//   ],
+//   async (req, res) => {
+//     const errors = validationResult(req);
+//     if (!errors.isEmpty()) {
+//       return res.status(400).json({ errors: errors.array() });
+//     }
+
+//     const { formName, responces, approvalHierarchy, faculty } = req.body;
+
+//     //crypto function of imange name
+//     const imageName = req.file ? crypto.randomBytes(32).toString("hex") : null;
+//     // Uploading the file in S3 Bucket
+//     if (req.file) {
+//       const command = new PutObjectCommand({
+//         Bucket: aws_Bucket_Name,
+//         Key: imageName,
+//         Body: req.file.buffer,
+//         ContentType: req.file.mimetype,
+//       });
+
+//       await s3.send(command);
+//     }
+//     try {
+//       const student = await Student.findOne({ _id: req.student.id });
+//       const approvers = Form.createApprovers(approvalHierarchy);
+//       const form = new Form({
+//         student: req.student.id,
+//         formName,
+//         faculty,
+//         responces,
+//         approvers,
+//         image: imageName,
+//       });
+//       const submittedForm = await form.save();
+//       res.json(submittedForm);
+//       // Iterate through the approval hierarchy
+//       for (const role of approvalHierarchy) {
+//         let approverFaculty;
+//         if (role === "advisor") {
+//           approverFaculty = await Faculty.findOne({
+//             "externalRoles.role": role,
+//             department: student.faculty,
+//             "externalRoles.batch": student.batch,
+//           });
+//         } else if (role === "dean") {
+//           approverFaculty = await Faculty.findOne({
+//             "externalRoles.role": role,
+//             department: student.faculty,
+//           });
+//         }
+
+//         if (approverFaculty) {
+//           // Send email to the approver
+//           const mailOptions = {
+//             from: "abdullah.mohammad2019274@gmail.com", // Your email address
+//             to: approverFaculty.email,
+//             subject: "New Form Submission",
+//             text:
+//               `Dear ${approverFaculty.firstname} ${approverFaculty.lastname},\n\n` +
+//               `A new form titled "${formName}" has been submitted by ${student.firstname} ${student.lastname} (Faculty: ${student.faculty}, Batch: ${student.batch}) and requires your approval.\n\n` +
+//               `Please find the details below:\n\n` +
+//               `Student Name: ${student.firstname} ${student.lastname}\n` +
+//               `Faculty: ${student.faculty}\n` +
+//               `Batch: ${student.batch}\n\n` +
+//               `Please log in to the system to review and approve or reject the form.\n\n` +
+//               `Thank you`,
+//           };
+//           transporter.sendMail(mailOptions, (error, info) => {
+//             if (error) {
+//               console.log(error);
+//             } else {
+//               console.log("Email sent: " + info.response);
+//             }
+//           });
+//         }
+//       }
+//     } catch (error) {
+//       console.error(error.message);
+//       res.status(500).send(`Server Error: ${error.message}`);
+//     }
+//   }
+// );
+
+
+// @route   POST api/forms/data
+// @desc    Add new form data for student
+// @access  Private
 router.post(
-  "/",
+  "/data",
   [
     auth,
-    upload.single("formDocument"),
     [check("formName", "Form Name is required").not().isEmpty()],
   ],
   async (req, res) => {
@@ -141,7 +233,38 @@ router.post(
 
     const { formName, responces, approvalHierarchy, faculty } = req.body;
 
-    //crypto function of imange name
+    try {
+      const student = await Student.findOne({ _id: req.student.id });
+      const approvers = Form.createApprovers(approvalHierarchy);
+      const form = new Form({
+        student: req.student.id,
+        formName,
+        faculty,
+        responces,
+        approvers,
+      });
+      const submittedForm = await form.save();
+      res.json(submittedForm);
+      // ...
+    } catch (error) {
+      console.error(error.message);
+      res.status(500).send(`Server Error: ${error.message}`);
+    }
+  }
+);
+
+
+// @route   POST api/forms/file
+// @desc    Add file for the form
+// @access  Private
+router.post(
+  "/file",
+  [
+    auth,
+    upload.single("formDocument"),
+  ],
+  async (req, res) => {
+    //crypto function of image name
     const imageName = req.file ? crypto.randomBytes(32).toString("hex") : null;
     // Uploading the file in S3 Bucket
     if (req.file) {
@@ -153,67 +276,22 @@ router.post(
       });
 
       await s3.send(command);
-    }
-    try {
-      const student = await Student.findOne({ _id: req.student.id });
-      const approvers = Form.createApprovers(approvalHierarchy);
-      const form = new Form({
-        student: req.student.id,
-        formName,
-        faculty,
-        responces,
-        approvers,
-        image: imageName,
-      });
-      const submittedForm = await form.save();
-      res.json(submittedForm);
-      // Iterate through the approval hierarchy
-      for (const role of approvalHierarchy) {
-        let approverFaculty;
-        if (role === "advisor") {
-          approverFaculty = await Faculty.findOne({
-            "externalRoles.role": role,
-            department: student.faculty,
-            "externalRoles.batch": student.batch,
-          });
-        } else if (role === "dean") {
-          approverFaculty = await Faculty.findOne({
-            "externalRoles.role": role,
-            department: student.faculty,
-          });
-        }
 
-        if (approverFaculty) {
-          // Send email to the approver
-          const mailOptions = {
-            from: "abdullah.mohammad2019274@gmail.com", // Your email address
-            to: approverFaculty.email,
-            subject: "New Form Submission",
-            text:
-              `Dear ${approverFaculty.firstname} ${approverFaculty.lastname},\n\n` +
-              `A new form titled "${formName}" has been submitted by ${student.firstname} ${student.lastname} (Faculty: ${student.faculty}, Batch: ${student.batch}) and requires your approval.\n\n` +
-              `Please find the details below:\n\n` +
-              `Student Name: ${student.firstname} ${student.lastname}\n` +
-              `Faculty: ${student.faculty}\n` +
-              `Batch: ${student.batch}\n\n` +
-              `Please log in to the system to review and approve or reject the form.\n\n` +
-              `Thank you`,
-          };
-          transporter.sendMail(mailOptions, (error, info) => {
-            if (error) {
-              console.log(error);
-            } else {
-              console.log("Email sent: " + info.response);
-            }
-          });
-        }
+      try {
+        const form = await Form.findOne({ _id: req.body.formId });
+        form.image = imageName;
+        await form.save();
+        res.json({ message: "File uploaded successfully", imageName });
+      } catch (error) {
+        console.error(error.message);
+        res.status(500).send(`Server Error: ${error.message}`);
       }
-    } catch (error) {
-      console.error(error.message);
-      res.status(500).send(`Server Error: ${error.message}`);
+    } else {
+      res.status(400).send("No file provided");
     }
   }
 );
+
 
 // @route   POST api/forms/faculty
 // @desc    Add new form for faculty
