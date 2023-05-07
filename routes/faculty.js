@@ -54,7 +54,8 @@ let transporter = nodemailer.createTransport({
 // @desc Register a faculty
 // @access Public
 
-router.post('/', [
+router.post('/',
+ [
     // Validations
     check('firstname', 'Please enter your firstname').not().isEmpty(),
     check('lastname', 'Please enter your lastname').not().isEmpty(),
@@ -65,7 +66,9 @@ router.post('/', [
     check('role', 'Please enter your faculty role').not().isEmpty(),
     check('subrole', 'Please enter your faculty subrole').not().isEmpty(),
     check('phoneNumber', 'Please enter a valid phone number').isLength({ min: 11 }),
-], async (req, res) => {
+], 
+
+async (req, res) => {
     const error = validationResult(req);
     if (!error.isEmpty()) {
         return res.status(400).json({ errors: error.array() });
@@ -391,8 +394,8 @@ router.get("/studentForms", auth, async (req, res) => {
 
         if (role === "advisor") {
           // Filter forms where the advisor's batch matches the student's batch
-          shouldAddForm = form.student.batch == externalRole.batch;
-        } else if (role === "dean") {
+          shouldAddForm = externalRole.batch && form.student && form.student.batch == externalRole.batch;
+        }else if (role === "dean") {
           shouldAddForm = form.student.faculty === faculty.department;
         }
 

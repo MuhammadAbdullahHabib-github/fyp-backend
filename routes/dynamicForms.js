@@ -209,7 +209,7 @@ router.post(
 );
 
 
-// @route   PUT api/forms/:id
+// @route   PUT api/dynamicforms/:id
 // @desc    Update data into form collection.
 // @access  Private
 
