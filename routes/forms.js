@@ -388,7 +388,7 @@ router.post(
   "/faculty/file",
   [auth, upload.single("formDocument")],
   async (req, res) => {
-    console.log("Parsed file:", req.file);
+    // console.log("Parsed file:", req.file);
 
     const imageName = req.file ? crypto.randomBytes(32).toString("hex") : null;
 
@@ -400,19 +400,19 @@ router.post(
         ContentType: req.file.mimetype,
       });
 
-      console.log("AWS SDK configuration:", s3.config);
+      // console.log("AWS SDK configuration:", s3.config);
 
       try {
         await s3.send(command);
       } catch (error) {
-        console.error("Error uploading file to S3:", error.message);
+        // console.error("Error uploading file to S3:", error.message);
         return res.status(500).send(`S3 Upload Error: ${error.message}`);
       }
 
       try {
         const form = await Form.findOne({ _id: req.body.formId });
         if (!form) {
-          console.error("Form not found:", req.body.formId);
+          // console.error("Form not found:", req.body.formId);
           return res.status(404).send("Form not found");
         }
 
@@ -420,7 +420,7 @@ router.post(
         await form.save();
         res.json({ message: "File uploaded successfully", imageName });
       } catch (error) {
-        console.error("Error updating form:", error.message);
+        // console.error("Error updating form:", error.message);
         res.status(500).send(`Server Error: ${error.message}`);
       }
     } else {

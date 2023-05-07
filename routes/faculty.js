@@ -12,6 +12,32 @@ const Faculty = require('../models/Faculty');
 const Form = require('../models/Form');
 const Student = require('../models/Student');
 
+
+
+//s3-bucket
+const {
+  S3Client,
+  PutObjectCommand,
+  GetObjectCommand,
+} = require("@aws-sdk/client-s3");
+const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
+const aws_Access_Key = config.get("ACCESS_KEY_ID"); // AWS access key
+const aws_Secret_Access_Key = config.get("SECRET_ACCESS_KEY"); // AWS secret key
+const aws_Bucket_Name = config.get("BUCKET_NAME"); // AWS region
+const aws_Region = config.get("BUCKET_REGION"); // AWS bucket name
+
+const s3 = new S3Client({
+  region: aws_Region,
+  credentials: {
+    accessKeyId: aws_Access_Key,
+    secretAccessKey: aws_Secret_Access_Key,
+  },
+  region: aws_Region,
+});
+
+
+
+
 // Create reusable transporter object using the default SMTP transport for nodemailer
 let transporter = nodemailer.createTransport({
   service: "gmail",
@@ -466,6 +492,76 @@ router.get("/studentForms/approvedOrDisapproved", auth, async (req, res) => {
 //   }
 // });
 
+//----------------------------------------------------------this is the working code----------------------------------------------
+
+// router.get("/facultyForms", auth, async (req, res) => {
+//   try {
+//     const faculty = await Faculty.findById(req.faculty.id);
+//     if (!faculty) {
+//       return res.status(404).json({ msg: "Faculty not found" });
+//     }
+
+//     const pendingForms = [];
+
+//     for (const externalRole of faculty.externalRoles) {
+//       const role = externalRole.role;
+
+//       const forms = await Form.find({
+//         "approvers.role": role,
+//         $or: [
+//           { department: externalRole.externalfaculty },
+//           { "approvers.role": { $in: ["HR", "Rector"] } },
+//         ],
+//       }).populate({ path: "faculty", model: "faculty" });
+
+//       forms.forEach((form) => {
+//         const approverIndex = form.approvers.findIndex(
+//           (approver) => approver.role === role
+//         );
+
+//         // for (const form of forms) {
+//         //   if (form.image) {
+//         //     const getObjectPatams = {
+//         //       Bucket: aws_Bucket_Name,
+//         //       Key: form.image,
+//         //     };
+//         //     const command = new GetObjectCommand(getObjectPatams);
+//         //     const url = await getSignedUrl(s3, command, { expiresIn: 3600 });
+//         //     form.image = url;
+//         //   }
+//         // }
+
+//         const isCurrentApprover = approverIndex === 0 || form.approvers[approverIndex - 1].approved;
+//         const isFormReviewed = form.approvers[approverIndex].approved || form.approvers[approverIndex].disapproved;
+
+//         // Add custom filters for each role as needed
+//         let shouldAddForm = true;
+
+//         if (role === "dean") {
+//           shouldAddForm = form.faculty.department === faculty.department;
+//         } else if (role === "Committee Convener") {
+//           shouldAddForm = form.faculty.department === faculty.department;
+//         } else if (role === "HR" || role === "Rector" || role === "Pro-Rector (A)" || role === "Pro-Rector (A&F)" || role === "Director Facilitation" || role === "Account Section" || role === "IT Manager" || role === "Transportation Manager" || role === "Security Manager" || role === "Incharge of Guest House" || role === "Secretary of Faculty Club") {
+//           shouldAddForm = true;
+//         }
+
+//         // Add any additional role-based filters here
+
+//         if (shouldAddForm && isCurrentApprover && !isFormReviewed) {
+//           pendingForms.push(form);
+//         }
+//       });
+//     }
+
+//     res.json(pendingForms);
+//   } catch (error) {
+//     console.error(error.message);
+//     res.status(500).send(`Server Error: ${error.message}`);
+//   }
+// });
+
+//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
 router.get("/facultyForms", auth, async (req, res) => {
   try {
     const faculty = await Faculty.findById(req.faculty.id);
@@ -486,15 +582,24 @@ router.get("/facultyForms", auth, async (req, res) => {
         ],
       }).populate({ path: "faculty", model: "faculty" });
 
-      forms.forEach((form) => {
+      for (const form of forms) {
         const approverIndex = form.approvers.findIndex(
           (approver) => approver.role === role
         );
 
+        if (form.image) {
+          const getObjectParams = {
+            Bucket: aws_Bucket_Name,
+            Key: form.image,
+          };
+          const command = new GetObjectCommand(getObjectParams);
+          const url = await getSignedUrl(s3, command, { expiresIn: 3600 });
+          form.image = url;
+        }
+
         const isCurrentApprover = approverIndex === 0 || form.approvers[approverIndex - 1].approved;
         const isFormReviewed = form.approvers[approverIndex].approved || form.approvers[approverIndex].disapproved;
 
-        // Add custom filters for each role as needed
         let shouldAddForm = true;
 
         if (role === "dean") {
@@ -505,12 +610,10 @@ router.get("/facultyForms", auth, async (req, res) => {
           shouldAddForm = true;
         }
 
-        // Add any additional role-based filters here
-
         if (shouldAddForm && isCurrentApprover && !isFormReviewed) {
           pendingForms.push(form);
         }
-      });
+      }
     }
 
     res.json(pendingForms);
@@ -519,6 +622,7 @@ router.get("/facultyForms", auth, async (req, res) => {
     res.status(500).send(`Server Error: ${error.message}`);
   }
 });
+
 
 
 // @route GET api/faculty/facultyForms/approvedOrDisapproved

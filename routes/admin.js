@@ -517,7 +517,7 @@ router.get("/faculty/approve", auth, async (req, res) => {
   }
 });
 
-// @route   PUT /api/admin/student/:id ----- applied at client side
+// @route   PUT /api/admin/faculty/approval/:id ----- applied at client side
 // @desc    Update the student by id
 // @access  Private
 //{ "accept": true } send this in body
