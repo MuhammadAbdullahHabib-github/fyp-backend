@@ -469,6 +469,46 @@ router.get("/studentForms", auth, async (req, res) => {
 // @desc Get all the forms approved or disapproved by the faculty members
 // @access Private
 
+// router.get("/studentForms/approvedOrDisapproved", auth, async (req, res) => {
+//   try {
+//     const faculty = await Faculty.findById(req.faculty.id);
+//     if (!faculty) {
+//       return res.status(404).json({ msg: "Faculty not found" });
+//     }
+
+//     const approvedOrDisapprovedForms = [];
+
+//     for (const externalRole of faculty.externalRoles) {
+//       const role = externalRole.role;
+
+//       const forms = await Form.find({
+//         "approvers.role": role,
+//         faculty: externalRole.externalfaculty,
+//       }).populate("student");
+
+//       forms.forEach((form) => {
+//         const approverIndex = form.approvers.findIndex(
+//           (approver) => approver.role === role
+//         );
+
+//         // Check if the form is approved or disapproved by the current faculty member
+//         if (
+//           form.approvers[approverIndex].approved ||
+//           form.approvers[approverIndex].disapproved
+//         ) {
+//           approvedOrDisapprovedForms.push(form);
+//         }
+//       });
+//     }
+
+//     res.json(approvedOrDisapprovedForms);
+//   } catch (error) {
+//     console.error(error.message);
+//     res.status(500).send(`Server Error: ${error.message}`);
+//   }
+// });
+
+
 router.get("/studentForms/approvedOrDisapproved", auth, async (req, res) => {
   try {
     const faculty = await Faculty.findById(req.faculty.id);
@@ -486,10 +526,20 @@ router.get("/studentForms/approvedOrDisapproved", auth, async (req, res) => {
         faculty: externalRole.externalfaculty,
       }).populate("student");
 
-      forms.forEach((form) => {
+      for (const form of forms) {
         const approverIndex = form.approvers.findIndex(
           (approver) => approver.role === role
         );
+
+        if (form.image) {
+          const getObjectParams = {
+            Bucket: aws_Bucket_Name,
+            Key: form.image,
+          };
+          const command = new GetObjectCommand(getObjectParams);
+          const url = await getSignedUrl(s3, command, { expiresIn: 3600 });
+          form.image = url;
+        }
 
         // Check if the form is approved or disapproved by the current faculty member
         if (
@@ -498,7 +548,7 @@ router.get("/studentForms/approvedOrDisapproved", auth, async (req, res) => {
         ) {
           approvedOrDisapprovedForms.push(form);
         }
-      });
+      }
     }
 
     res.json(approvedOrDisapprovedForms);
@@ -507,6 +557,7 @@ router.get("/studentForms/approvedOrDisapproved", auth, async (req, res) => {
     res.status(500).send(`Server Error: ${error.message}`);
   }
 });
+
 
 
 
@@ -709,6 +760,48 @@ router.get("/facultyForms", auth, async (req, res) => {
 // @desc Get all the forms approved or disapproved by the faculty members
 // @access Private
 
+// router.get("/facultyForms/approvedOrDisapproved", auth, async (req, res) => {
+//   try {
+//     const faculty = await Faculty.findById(req.faculty.id);
+//     if (!faculty) {
+//       return res.status(404).json({ msg: "Faculty not found" });
+//     }
+
+//     const approvedOrDisapprovedForms = [];
+
+//     for (const externalRole of faculty.externalRoles) {
+//       const role = externalRole.role;
+
+//       const forms = await Form.find({
+//         "approvers.role": role,
+//         $or: [
+//           { department: externalRole.externalfaculty },
+//           { "approvers.role": { $in: ["HR", "Rector"] } },
+//         ],
+//       }).populate({ path: "faculty", model: "faculty" });
+
+//       forms.forEach((form) => {
+//         const approverIndex = form.approvers.findIndex(
+//           (approver) => approver.role === role
+//         );
+
+//         // Check if the form is approved or disapproved by the current faculty member
+//         if (
+//           form.approvers[approverIndex].approved ||
+//           form.approvers[approverIndex].disapproved
+//         ) {
+//           approvedOrDisapprovedForms.push(form);
+//         }
+//       });
+//     }
+
+//     res.json(approvedOrDisapprovedForms);
+//   } catch (error) {
+//     console.error(error.message);
+//     res.status(500).send(`Server Error: ${error.message}`);
+//   }
+// });
+
 router.get("/facultyForms/approvedOrDisapproved", auth, async (req, res) => {
   try {
     const faculty = await Faculty.findById(req.faculty.id);
@@ -729,10 +822,20 @@ router.get("/facultyForms/approvedOrDisapproved", auth, async (req, res) => {
         ],
       }).populate({ path: "faculty", model: "faculty" });
 
-      forms.forEach((form) => {
+      for (const form of forms) {
         const approverIndex = form.approvers.findIndex(
           (approver) => approver.role === role
         );
+
+        if (form.image) {
+          const getObjectParams = {
+            Bucket: aws_Bucket_Name,
+            Key: form.image,
+          };
+          const command = new GetObjectCommand(getObjectParams);
+          const url = await getSignedUrl(s3, command, { expiresIn: 3600 });
+          form.image = url;
+        }
 
         // Check if the form is approved or disapproved by the current faculty member
         if (
@@ -741,7 +844,7 @@ router.get("/facultyForms/approvedOrDisapproved", auth, async (req, res) => {
         ) {
           approvedOrDisapprovedForms.push(form);
         }
-      });
+      }
     }
 
     res.json(approvedOrDisapprovedForms);
