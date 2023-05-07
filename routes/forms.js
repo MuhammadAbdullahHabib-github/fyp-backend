@@ -265,7 +265,7 @@ router.post(
   ],
   async (req, res) => {
     // Check if the file is being parsed correctly
-    console.log("Parsed file:", req.file);
+    // console.log("Parsed file:", req.file);
 
     //crypto function of image name
     const imageName = req.file ? crypto.randomBytes(32).toString("hex") : null;
@@ -279,6 +279,127 @@ router.post(
       });
 
       // Check the AWS SDK configuration
+      // console.log("AWS SDK configuration:", s3.config);
+
+      try {
+        await s3.send(command);
+      } catch (error) {
+        // console.error("Error uploading file to S3:", error.message);
+        return res.status(500).send(`S3 Upload Error: ${error.message}`);
+      }
+
+      try {
+        const form = await Form.findOne({ _id: req.body.formId });
+        if (!form) {
+          // console.error("Form not found:", req.body.formId);
+          return res.status(404).send("Form not found");
+        }
+
+        form.image = imageName;
+        await form.save();
+        res.json({ message: "File uploaded successfully", imageName });
+      } catch (error) {
+        // console.error("Error updating form:", error.message);
+        res.status(500).send(`Server Error: ${error.message}`);
+      }
+    } else {
+      res.status(400).send("No file provided");
+    }
+  }
+);
+
+
+
+
+// @route   POST api/forms/faculty
+// @desc    Add new form for faculty
+// @access  Private
+
+// router.post(
+//   "/faculty",
+//   [
+//     auth,
+//     upload.single("formDocument"),
+//     [check("formName", "Form Name is required").not().isEmpty()],
+//   ],
+//   async (req, res) => {
+//     const errors = validationResult(req);
+//     if (!errors.isEmpty()) {
+//       return res.status(400).json({ errors: errors.array() });
+//     }
+//     const { formName, responces, approvalHierarchy, department } = req.body;
+//     try {
+//       const faculty = await Faculty.findOne({ _id: req.faculty.id });
+//       if (!faculty) {
+//         return res.status(400).json({ msg: "Faculty not found" });
+//       }
+//       const approvers = Form.createApprovers(approvalHierarchy);
+//       const form = new Form({
+//         faculty: req.faculty.id,
+//         formName,
+//         responces,
+//         department,
+//         approvers,
+//       });
+//       const submittedForm = await form.save();
+//       res.json(submittedForm);
+//     } catch (error) {
+//       console.error(error.message);
+//       res.status(500).send(`Server Error: ${error.message}`);
+//     }
+//   }
+// );
+
+
+// Route for handling form data
+router.post(
+  "/faculty/data",
+  [auth, check("formName", "Form Name is required").not().isEmpty()],
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+    const { formName, responces, approvalHierarchy, department } = req.body;
+    try {
+      const faculty = await Faculty.findOne({ _id: req.faculty.id });
+      if (!faculty) {
+        return res.status(400).json({ msg: "Faculty not found" });
+      }
+      const approvers = Form.createApprovers(approvalHierarchy);
+      const form = new Form({
+        faculty: req.faculty.id,
+        formName,
+        responces,
+        department,
+        approvers,
+      });
+      const submittedForm = await form.save();
+      res.json(submittedForm);
+    } catch (error) {
+      console.error(error.message);
+      res.status(500).send(`Server Error: ${error.message}`);
+    }
+  }
+);
+
+// Route for handling file upload
+router.post(
+  "/faculty/file",
+  [auth, upload.single("formDocument")],
+  async (req, res) => {
+    console.log("Parsed file:", req.file);
+
+    const imageName = req.file ? crypto.randomBytes(32).toString("hex") : null;
+
+    if (req.file) {
+      const command = new PutObjectCommand({
+        Bucket: aws_Bucket_Name,
+        Key: imageName,
+        Body: req.file.buffer,
+        ContentType: req.file.mimetype,
+      });
+
       console.log("AWS SDK configuration:", s3.config);
 
       try {
@@ -304,48 +425,6 @@ router.post(
       }
     } else {
       res.status(400).send("No file provided");
-    }
-  }
-);
-
-
-
-
-// @route   POST api/forms/faculty
-// @desc    Add new form for faculty
-// @access  Private
-
-router.post(
-  "/faculty",
-  [
-    auth,
-    upload.single("formDocument"),
-    [check("formName", "Form Name is required").not().isEmpty()],
-  ],
-  async (req, res) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
-    }
-    const { formName, responces, approvalHierarchy, department } = req.body;
-    try {
-      const faculty = await Faculty.findOne({ _id: req.faculty.id });
-      if (!faculty) {
-        return res.status(400).json({ msg: "Faculty not found" });
-      }
-      const approvers = Form.createApprovers(approvalHierarchy);
-      const form = new Form({
-        faculty: req.faculty.id,
-        formName,
-        responces,
-        department,
-        approvers,
-      });
-      const submittedForm = await form.save();
-      res.json(submittedForm);
-    } catch (error) {
-      console.error(error.message);
-      res.status(500).send(`Server Error: ${error.message}`);
     }
   }
 );
