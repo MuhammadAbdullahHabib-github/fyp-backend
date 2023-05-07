@@ -276,6 +276,89 @@ router.get("/names", async (req, res) => {
 // @desc    Get all the forms
 // @access  Private
 
+// router.get("/formStats", auth, async (req, res) => {
+//   try {
+//     const { time, faculty, formName } = req.query;
+
+//     let startDate = new Date();
+//     let endDate = new Date();
+
+//     switch (time) {
+//       case "today":
+//         startDate.setHours(0, 0, 0, 0);
+//         endDate.setHours(23, 59, 59, 999);
+//         break;
+//       case "yesterday":
+//         startDate.setDate(startDate.getDate() - 1);
+//         startDate.setHours(0, 0, 0, 0);
+//         endDate.setDate(endDate.getDate() - 1);
+//         endDate.setHours(23, 59, 59, 999);
+//         break;
+//       case "lastWeek":
+//         startDate.setDate(startDate.getDate() - 7);
+//         break;
+//       case "lastMonth":
+//         startDate.setMonth(startDate.getMonth() - 1);
+//         break;
+//       case "lastYear":
+//         startDate.setFullYear(startDate.getFullYear() - 1);
+//         break;
+//       case "all":
+//         // Do nothing, as we want to retrieve all data regardless of time range
+//         break;
+//       default:
+//         return res.status(400).json({ msg: "Invalid time range" });
+//     }
+
+//     const query = {};
+    
+//     if (time !== "all") {
+//       query.date = { $gte: startDate, $lte: endDate };
+//     }
+
+//     if (faculty !== "all") {
+//       query.faculty = faculty;
+//     }
+
+//     if (formName !== "all") {
+//       query.formName = formName;
+//     }
+
+//     const forms = await Form.find(query);
+
+//     let totalForms = 0;
+//     let approvedForms = 0;
+//     let rejectedForms = 0;
+//     let pendingForms = 0;
+
+//     forms.forEach((form) => {
+//       totalForms++;
+
+//       const allApproved = form.approvers.every((approver) => approver.approved);
+//       const anyRejected = form.approvers.some((approver) => approver.disapproved);
+
+//       if (allApproved) {
+//         approvedForms++;
+//       } else if (anyRejected) {
+//         rejectedForms++;
+//       } else {
+//         pendingForms++;
+//       }
+//     });
+
+//     res.json({
+//       totalForms,
+//       approvedForms,
+//       rejectedForms,
+//       pendingForms,
+//     });
+//   } catch (error) {
+//     console.error(error.message);
+//     res.status(500).send(`Server Error: ${error.message}`);
+//   }
+// });
+
+
 router.get("/formStats", auth, async (req, res) => {
   try {
     const { time, faculty, formName } = req.query;
@@ -331,26 +414,35 @@ router.get("/formStats", auth, async (req, res) => {
     let rejectedForms = 0;
     let pendingForms = 0;
 
-    forms.forEach((form) => {
-      totalForms++;
+    // Group the forms by the date they were submitted on
+    const formsByDate = forms.reduce((accumulator, form) => {
+      const date = form.date.toISOString().split('T')[0]; // Get date in ISO format (YYYY-MM-DD)
 
-      const allApproved = form.approvers.every((approver) => approver.approved);
-      const anyRejected = form.approvers.some((approver) => approver.disapproved);
-
-      if (allApproved) {
-        approvedForms++;
-      } else if (anyRejected) {
-        rejectedForms++;
+      if (accumulator[date]) {
+        accumulator[date].push(form);
       } else {
-        pendingForms++;
+        accumulator[date] = [form];
       }
-    });
+
+      return accumulator;
+    }, {});
+
+    const histogramData = [];
+
+    // Loop through the forms grouped by date and count the number of forms submitted on each date
+    for (const date in formsByDate) {
+      const formsOnDate = formsByDate[date];
+      const formsCount = formsOnDate.length;
+
+      histogramData.push({ date, formsCount });
+    }
 
     res.json({
       totalForms,
       approvedForms,
       rejectedForms,
       pendingForms,
+      histogramData
     });
   } catch (error) {
     console.error(error.message);
