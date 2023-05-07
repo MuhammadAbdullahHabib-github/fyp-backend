@@ -303,6 +303,9 @@ router.get("/formStats", auth, async (req, res) => {
       case "lastYear":
         startDate.setFullYear(startDate.getFullYear() - 1);
         break;
+      case "allTime":
+        startDate = new Date(0); // Set startDate to the earliest possible date
+        break;
       default:
         return res.status(400).json({ msg: "Invalid time range" });
     }
@@ -352,6 +355,7 @@ router.get("/formStats", auth, async (req, res) => {
     res.status(500).send(`Server Error: ${error.message}`);
   }
 });
+
 
 
 
