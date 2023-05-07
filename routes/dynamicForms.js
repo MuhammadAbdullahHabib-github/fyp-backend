@@ -31,7 +31,7 @@ router.get("/", auth, async (req, res) => {
   }
 });
 
-// @route   GET api/dynamicforms/student/form
+// @route   GET api/dynamicforms/student
 // @desc    Get all the dynamicforms with student visibility
 // @access  Private
 
