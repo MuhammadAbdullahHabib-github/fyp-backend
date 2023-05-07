@@ -133,7 +133,7 @@ router.get("/faculty/all", auth, async (req, res) => {
     const forms = await Form.find({
       faculty: { $exists: true },
       department: { $exists: true },
-    }).papulate("faculty");
+    }).populate("faculty");
 
     const formsWithImageUrls = [];
 
