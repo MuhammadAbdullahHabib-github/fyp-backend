@@ -365,39 +365,35 @@ router.get("/formStats", auth, async (req, res) => {
 
     let startDate = new Date();
     let endDate = new Date();
-
-    switch (time) {
-      case "today":
-        startDate.setHours(0, 0, 0, 0);
-        endDate.setHours(23, 59, 59, 999);
-        break;
-      case "yesterday":
-        startDate.setDate(startDate.getDate() - 1);
-        startDate.setHours(0, 0, 0, 0);
-        endDate.setDate(endDate.getDate() - 1);
-        endDate.setHours(23, 59, 59, 999);
-        break;
-      case "lastWeek":
-        startDate.setDate(startDate.getDate() - 7);
-        break;
-      case "lastMonth":
-        startDate.setMonth(startDate.getMonth() - 1);
-        break;
-      case "lastYear":
-        startDate.setFullYear(startDate.getFullYear() - 1);
-        break;
-      case "all":
-        // Do nothing, as we want to retrieve all data regardless of time range
-        break;
-      default:
-        return res.status(400).json({ msg: "Invalid time range" });
+    
+    // If time is 'all', we don't want to filter by date range
+    if (time !== "all") {
+      switch (time) {
+        case "today":
+          startDate.setHours(0, 0, 0, 0);
+          endDate.setHours(23, 59, 59, 999);
+          break;
+        case "yesterday":
+          startDate.setDate(startDate.getDate() - 1);
+          startDate.setHours(0, 0, 0, 0);
+          endDate.setDate(endDate.getDate() - 1);
+          endDate.setHours(23, 59, 59, 999);
+          break;
+        case "lastWeek":
+          startDate.setDate(startDate.getDate() - 7);
+          break;
+        case "lastMonth":
+          startDate.setMonth(startDate.getMonth() - 1);
+          break;
+        case "lastYear":
+          startDate.setFullYear(startDate.getFullYear() - 1);
+          break;
+        default:
+          return res.status(400).json({ msg: "Invalid time range" });
+      }
     }
 
     const query = {};
-    
-    if (time !== "all") {
-      query.date = { $gte: startDate, $lte: endDate };
-    }
 
     if (faculty !== "all") {
       query.faculty = faculty;
@@ -414,41 +410,44 @@ router.get("/formStats", auth, async (req, res) => {
     let rejectedForms = 0;
     let pendingForms = 0;
 
-    // Group the forms by the date they were submitted on
-    const formsByDate = forms.reduce((accumulator, form) => {
-      const date = form.date.toISOString().split('T')[0]; // Get date in ISO format (YYYY-MM-DD)
+    // Create an array to store the counts for each day of the week
+    let formsByDayOfWeek = [0, 0, 0, 0, 0, 0, 0];
 
-      if (accumulator[date]) {
-        accumulator[date].push(form);
-      } else {
-        accumulator[date] = [form];
+    forms.forEach((form) => {
+      // Only count forms that fall within the selected date range
+      if (time === "all" || (form.date >= startDate && form.date <= endDate)) {
+        totalForms++;
+
+        const allApproved = form.approvers.every((approver) => approver.approved);
+        const anyRejected = form.approvers.some((approver) => approver.disapproved);
+
+        if (allApproved) {
+          approvedForms++;
+        } else if (anyRejected) {
+          rejectedForms++;
+        } else {
+          pendingForms++;
+        }
+
+        // Increment the count for the day of the week on which the form was submitted
+        const dayOfWeek = form.date.getDay();
+        formsByDayOfWeek[dayOfWeek]++;
       }
-
-      return accumulator;
-    }, {});
-
-    const histogramData = [];
-
-    // Loop through the forms grouped by date and count the number of forms submitted on each date
-    for (const date in formsByDate) {
-      const formsOnDate = formsByDate[date];
-      const formsCount = formsOnDate.length;
-
-      histogramData.push({ date, formsCount });
-    }
+    });
 
     res.json({
       totalForms,
       approvedForms,
       rejectedForms,
       pendingForms,
-      histogramData
+      formsByDayOfWeek,
     });
   } catch (error) {
     console.error(error.message);
     res.status(500).send(`Server Error: ${error.message}`);
   }
 });
+
 
 
 
