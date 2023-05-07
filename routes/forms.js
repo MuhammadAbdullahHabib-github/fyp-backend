@@ -276,9 +276,9 @@ router.get("/names", async (req, res) => {
 // @desc    Get all the forms
 // @access  Private
 
-router.post("/formStats", auth, async (req, res) => {
+router.get("/formStats", auth, async (req, res) => {
   try {
-    const { time, department, formName } = req.body;
+    const { time, department, formName } = req.query;
 
     let startDate = new Date();
     let endDate = new Date();
