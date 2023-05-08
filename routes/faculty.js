@@ -349,6 +349,139 @@ router.put("/update", auth, async (req, res) => {
 // });
 // -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
+// router.get("/studentForms", auth, async (req, res) => {
+//   try {
+//     const faculty = await Faculty.findById(req.faculty.id);
+//     if (!faculty) {
+//       return res.status(404).json({ msg: "Faculty not found" });
+//     }
+
+//     const matchedForms = {};
+
+//     for (const externalRole of faculty.externalRoles) {
+//       const role = externalRole.role;
+
+//       const forms = await Form.find({
+//         "approvers.role": role,
+//         faculty: externalRole.externalfaculty,
+//       }).populate("student");
+
+//       matchedForms[role] = [];
+
+//       for (const form of forms) {
+//         const approverIndex = form.approvers.findIndex(
+//           (approver) => approver.role === role
+//         );
+
+//         if (form.image) {
+//           const getObjectParams = {
+//             Bucket: aws_Bucket_Name,
+//             Key: form.image,
+//           };
+//           const command = new GetObjectCommand(getObjectParams);
+//           const url = await getSignedUrl(s3, command, { expiresIn: 3600 });
+//           form.image = url;
+//         }
+
+//         if (approverIndex > 0 && !form.approvers[approverIndex - 1].approved) {
+//           // Skip the form if the previous approver hasn't approved it yet
+//           return;
+//         }
+
+//         const isFormReviewed = form.approvers[approverIndex].approved || form.approvers[approverIndex].disapproved;
+
+//         let shouldAddForm = true;
+
+//         if (role === "advisor") {
+//           // Filter forms where the advisor's batch matches the student's batch
+//           shouldAddForm = externalRole.batch && form.student && form.student.batch == externalRole.batch;
+//         }else if (role === "dean") {
+//           shouldAddForm = form.student.faculty === faculty.department;
+//         }
+
+//         // Add any additional role-based filters here
+
+//         if (shouldAddForm && !isFormReviewed) {
+//           matchedForms[role].push(form);
+//         }
+//       }
+//     }
+
+//     res.json(matchedForms[faculty.externalRoles[0].role]);
+//   } catch (error) {
+//     console.error(error.message);
+//     res.status(500).send(`Server Error: ${error.message}`);
+//   }
+// });
+
+// router.get("/studentForms", auth, async (req, res) => {
+//   try {
+//     const faculty = await Faculty.findById(req.faculty.id);
+//     if (!faculty) {
+//       return res.status(404).json({ msg: "Faculty not found" });
+//     }
+
+//     const matchedForms = {};
+
+//     for (const externalRole of faculty.externalRoles) {
+//       const role = externalRole.role;
+
+//       const forms = await Form.find({
+//         "approvers.role": role,
+//         faculty: externalRole.externalfaculty,
+//       }).populate("student");
+
+//       matchedForms[role] = [];
+
+//       for (const form of forms) {
+//         const approverIndex = form.approvers.findIndex(
+//           (approver) => approver.role === role
+//         );
+
+//         if (form.image) {
+//           const getObjectParams = {
+//             Bucket: aws_Bucket_Name,
+//             Key: form.image,
+//           };
+//           const command = new GetObjectCommand(getObjectParams);
+//           const url = await getSignedUrl(s3, command, { expiresIn: 3600 });
+//           form.image = url;
+//         }
+
+//         if (approverIndex > 0 && !form.approvers[approverIndex - 1].approved) {
+//           // Skip the form if the previous approver hasn't approved it yet
+//           continue;
+//         }
+
+//         const isFormReviewed = form.approvers[approverIndex].approved || form.approvers[approverIndex].disapproved;
+
+//         let shouldAddForm = true;
+
+//         if (role === "advisor") {
+//           // Filter forms where the advisor's batch matches the student's batch
+//           shouldAddForm = externalRole.batch && form.student && form.student.batch == externalRole.batch;
+//         } else if (role === "dean") {
+//           shouldAddForm = form.student.faculty === faculty.department;
+//         }else if (role === "Rector" || role === "Pro-Rector (A)" || role === "Pro-Rector (A&F)") {
+//           shouldAddForm = true;
+//         }
+
+//         // Add any additional role-based filters here
+
+//         if (shouldAddForm && !isFormReviewed) {
+//           matchedForms[role].push(form);
+//         }
+//       }
+//     }
+
+//     res.json(matchedForms[faculty.externalRoles[0].role]);
+//   } catch (error) {
+//     console.error(error.message);
+//     res.status(500).send(`Server Error: ${error.message}`);
+//   }
+// });
+
+
 router.get("/studentForms", auth, async (req, res) => {
   try {
     const faculty = await Faculty.findById(req.faculty.id);
@@ -385,7 +518,7 @@ router.get("/studentForms", auth, async (req, res) => {
 
         if (approverIndex > 0 && !form.approvers[approverIndex - 1].approved) {
           // Skip the form if the previous approver hasn't approved it yet
-          return;
+          continue;
         }
 
         const isFormReviewed = form.approvers[approverIndex].approved || form.approvers[approverIndex].disapproved;
@@ -395,8 +528,10 @@ router.get("/studentForms", auth, async (req, res) => {
         if (role === "advisor") {
           // Filter forms where the advisor's batch matches the student's batch
           shouldAddForm = externalRole.batch && form.student && form.student.batch == externalRole.batch;
-        }else if (role === "dean") {
+        } else if (role === "dean") {
           shouldAddForm = form.student.faculty === faculty.department;
+        } else if (role === "Rector" || role === "Pro-Rector (A)" || role === "Pro-Rector (A&F)") {
+          shouldAddForm = true;
         }
 
         // Add any additional role-based filters here
@@ -413,6 +548,9 @@ router.get("/studentForms", auth, async (req, res) => {
     res.status(500).send(`Server Error: ${error.message}`);
   }
 });
+
+
+
 
 
 
