@@ -516,8 +516,13 @@ router.get("/studentForms", auth, async (req, res) => {
           form.image = url;
         }
 
-        if (approverIndex > 0 && !form.approvers[approverIndex - 1].approved) {
-          // Skip the form if the previous approver hasn't approved it yet
+        // if (approverIndex > 0 && !form.approvers[approverIndex - 1].approved) {
+        //   // Skip the form if the previous approver hasn't approved it yet
+        //   continue;
+        // }
+
+        if (approverIndex > 0 && (!form.approvers[approverIndex - 1].approved || form.approvers[approverIndex - 1].disapproved)) {
+          // Skip the form if the previous approver hasn't approved it yet or has disapproved it
           continue;
         }
 
